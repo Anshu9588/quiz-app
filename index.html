@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Quiz App</title>
+    <title>Simple Quiz App</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -116,9 +116,8 @@
             from { opacity: 0; transform: translate(-50%, -60%); }
             to { opacity: 1; transform: translate(-50%, -50%); }
         }
-        textarea {
+        textarea, input[type="text"], input[type="number"], select {
             width: 100%;
-            min-height: 150px;
             padding: 10px;
             border-radius: 8px;
             border: 1px solid #cbd5e0;
@@ -126,27 +125,74 @@
             font-size: 0.95em;
             resize: vertical;
         }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: none; /* Hidden by default */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div class="quiz-container">
-        <h1 class="text-3xl font-bold text-center text-gray-800 mb-4"> Quiz App</h1>
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Simple Quiz App</h1>
 
-        <!-- JSON Input Section (Combined for Paste and File Upload) -->
-        <div id="json-input-section" class="flex flex-col items-center gap-4">
-            <p class="text-lg text-gray-700">Paste your Quiz JSON below OR Upload a file:</p>
+        <!-- Input Section: Combined for Paste, File Upload, and AI Generation -->
+        <div id="input-selection-section" class="flex flex-col items-center gap-6">
+            <p class="text-xl font-semibold text-gray-800">Choose how to load your quiz:</p>
 
-            <textarea id="json-paste-area" placeholder='[{"question": "...", "options": ["...", "..."], "answer": "...", "explanation": "..."}, ...]' class="w-full"></textarea>
+            <!-- Option 1: Paste JSON or Upload File -->
+            <div class="w-full border border-gray-200 rounded-lg p-4 flex flex-col items-center gap-4">
+                <p class="text-lg text-gray-700">1. Paste JSON or Upload File:</p>
+                <textarea id="json-paste-area" placeholder='[{"question": "...", "options": ["...", "..."], "answer": "...", "explanation": "..."}, ...]' class="w-full"></textarea>
 
-            <div class="flex items-center gap-4 w-full justify-center">
-                <label for="json-upload" class="cursor-pointer bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-sm transition duration-300 ease-in-out">
-                    Upload JSON File
-                </label>
-                <input type="file" id="json-upload" accept=".json" class="hidden">
-                <p id="file-status" class="text-sm text-gray-600">No file chosen</p>
+                <div class="flex items-center gap-4 w-full justify-center">
+                    <label for="json-upload" class="cursor-pointer bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-sm transition duration-300 ease-in-out">
+                        Upload JSON File
+                    </label>
+                    <input type="file" id="json-upload" accept=".json" class="hidden">
+                    <p id="file-status" class="text-sm text-gray-600">No file chosen</p>
+                </div>
+                <button id="load-pasted-quiz-button" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out w-full max-w-xs">Load Quiz from Input</button>
             </div>
 
-            <button id="load-quiz-button" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out">Load Quiz</button>
+            <div class="text-gray-500 font-semibold text-lg">OR</div>
+
+            <!-- Option 2: Generate Quiz by Topic -->
+            <div class="w-full border border-gray-200 rounded-lg p-4 flex flex-col items-center gap-4">
+                <p class="text-lg text-gray-700">2. Generate Quiz by Topic:</p>
+                <input type="text" id="topic-input" placeholder="e.g., World History, Science Facts" class="w-full p-2 border border-gray-300 rounded-lg">
+
+                <div class="flex flex-col sm:flex-row gap-4 w-full">
+                    <div class="w-full sm:w-1/2">
+                        <label for="language-select" class="block text-sm font-medium text-gray-700 mb-1">Language:</label>
+                        <select id="language-select" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <option value="English">English</option>
+                            <option value="Hindi">Hindi</option>
+                            <option value="Spanish">Spanish</option>
+                            <option value="French">French</option>
+                            <option value="German">German</option>
+                            <option value="Japanese">Japanese</option>
+                            <option value="Chinese">Chinese</option>
+                        </select>
+                    </div>
+                    <div class="w-full sm:w-1/2">
+                        <label for="num-questions-input" class="block text-sm font-medium text-gray-700 mb-1">Number of Questions (1-10):</label>
+                        <input type="number" id="num-questions-input" value="5" min="1" max="10" class="w-full p-2 border border-gray-300 rounded-lg">
+                    </div>
+                </div>
+
+                <button id="generate-quiz-button" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out w-full max-w-xs">Generate Quiz</button>
+                <div id="loading-indicator" class="loading-spinner"></div>
+                <p id="generation-status" class="text-sm text-gray-600 hidden">Generating questions...</p>
+            </div>
         </div>
 
         <!-- Quiz Display Section -->
@@ -193,13 +239,19 @@
         let quizStarted = false;
 
         // Get DOM elements
-        const jsonInputSection = document.getElementById('json-input-section');
+        const inputSelectionSection = document.getElementById('input-selection-section');
         const quizDisplaySection = document.getElementById('quiz-display-section');
         const quizResultSection = document.getElementById('quiz-result-section');
         const jsonPasteArea = document.getElementById('json-paste-area');
-        const loadQuizButton = document.getElementById('load-quiz-button');
-        const jsonUploadInput = document.getElementById('json-upload'); // Re-added
-        const fileStatusParagraph = document.getElementById('file-status'); // Re-added
+        const loadPastedQuizButton = document.getElementById('load-pasted-quiz-button');
+        const jsonUploadInput = document.getElementById('json-upload');
+        const fileStatusParagraph = document.getElementById('file-status');
+        const topicInput = document.getElementById('topic-input');
+        const languageSelect = document.getElementById('language-select'); // New
+        const numQuestionsInput = document.getElementById('num-questions-input'); // New
+        const generateQuizButton = document.getElementById('generate-quiz-button');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const generationStatus = document.getElementById('generation-status');
         const questionText = document.getElementById('question-text');
         const optionsContainer = document.getElementById('options-container');
         const currentQuestionNumberSpan = document.getElementById('current-question-number');
@@ -234,6 +286,37 @@
             messageBox.style.display = 'none';
         });
 
+        /**
+         * Validates the structure of the parsed quiz data.
+         * @param {Array} data - The parsed JSON array.
+         * @returns {boolean} True if data is valid, false otherwise.
+         */
+        function validateQuizData(data) {
+            if (!Array.isArray(data) || data.length === 0) {
+                return false;
+            }
+            return data.every(q =>
+                typeof q.question === 'string' &&
+                Array.isArray(q.options) && q.options.every(o => typeof o === 'string') &&
+                typeof q.answer === 'string' &&
+                (typeof q.explanation === 'string' || q.explanation === undefined || q.explanation === null)
+            );
+        }
+
+        /**
+         * Initializes and starts the quiz with the provided quiz data.
+         * @param {Array} data - The validated quiz data.
+         */
+        function startQuiz(data) {
+            quizData = data.map(q => ({ ...q, userAnswer: null })); // Add userAnswer property
+            quizStarted = true;
+            inputSelectionSection.classList.add('hidden');
+            quizDisplaySection.classList.remove('hidden');
+            currentQuestionIndex = 0;
+            score = 0; // Reset score
+            loadQuestion();
+        }
+
         // Event listener for JSON file upload
         jsonUploadInput.addEventListener('change', (event) => {
             const file = event.target.files[0];
@@ -251,8 +334,8 @@
             }
         });
 
-        // Event listener for Load Quiz button (handles both paste and file content)
-        loadQuizButton.addEventListener('click', () => {
+        // Event listener for Load Quiz from Input button (handles both paste and file content)
+        loadPastedQuizButton.addEventListener('click', () => {
             const jsonString = jsonPasteArea.value.trim();
             if (!jsonString) {
                 showMessageBox("Info", "Please paste your quiz JSON or upload a file.");
@@ -261,36 +344,114 @@
 
             try {
                 const parsedData = JSON.parse(jsonString);
-                if (!Array.isArray(parsedData) || parsedData.length === 0) {
-                    showMessageBox("Error", "Invalid JSON format. Please provide an array of question objects.");
-                    quizData = []; // Clear data if invalid
+                if (validateQuizData(parsedData)) {
+                    startQuiz(parsedData);
                 } else {
-                    // Validate each question object structure and initialize userAnswer
-                    const isValid = parsedData.every(q =>
-                        typeof q.question === 'string' &&
-                        Array.isArray(q.options) && q.options.every(o => typeof o === 'string') &&
-                        typeof q.answer === 'string' &&
-                        (typeof q.explanation === 'string' || q.explanation === undefined || q.explanation === null)
-                    );
-
-                    if (!isValid) {
-                        showMessageBox("Error", "Invalid quiz data structure. Each question must have 'question' (string), 'options' (array of strings), 'answer' (string), and optionally 'explanation' (string).");
-                        quizData = []; // Clear data if invalid
-                    } else {
-                        quizData = parsedData.map(q => ({ ...q, userAnswer: null })); // Add userAnswer property
-                        quizStarted = true;
-                        jsonInputSection.classList.add('hidden');
-                        quizDisplaySection.classList.remove('hidden');
-                        currentQuestionIndex = 0;
-                        score = 0; // Reset score
-                        loadQuestion();
-                    }
+                    showMessageBox("Error", "Invalid quiz data structure. Please ensure it follows the correct format.");
+                    quizData = []; // Clear data if invalid
                 }
             } catch (error) {
                 showMessageBox("Error", "Failed to parse JSON. Please ensure the content is valid JSON.");
                 quizData = []; // Clear data if parsing fails
             }
         });
+
+        // Event listener for Generate Quiz button
+        generateQuizButton.addEventListener('click', async () => {
+            const topic = topicInput.value.trim();
+            const language = languageSelect.value;
+            const numQuestions = parseInt(numQuestionsInput.value, 10);
+
+            if (!topic) {
+                showMessageBox("Info", "Please enter a topic to generate questions.");
+                return;
+            }
+            if (isNaN(numQuestions) || numQuestions < 1 || numQuestions > 10) {
+                showMessageBox("Info", "Please enter a valid number of questions between 1 and 10.");
+                return;
+            }
+
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            generationStatus.classList.remove('hidden');
+            generateQuizButton.disabled = true;
+            loadPastedQuizButton.disabled = true;
+            jsonPasteArea.disabled = true;
+            jsonUploadInput.disabled = true;
+            topicInput.disabled = true;
+            languageSelect.disabled = true;
+            numQuestionsInput.disabled = true;
+
+            try {
+                let chatHistory = [];
+                const prompt = `Generate ${numQuestions} multiple-choice quiz questions in ${language} about "${topic}". Each question should have 4 options, one correct answer, and an explanation. The questions should be at the Higher Secondary School Certificate (HSSC) exam level. Provide the output as a JSON array of objects. Each object must have 'question' (string), 'options' (array of strings), 'answer' (string, matching one of the options), and 'explanation' (string). Example format: [{"question": "...", "options": ["...", "..."], "answer": "...", "explanation": "..."}, ...]`;
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = {
+                    contents: chatHistory,
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "ARRAY",
+                            items: {
+                                type: "OBJECT",
+                                properties: {
+                                    "question": { "type": "STRING" },
+                                    "options": {
+                                        "type": "ARRAY",
+                                        "items": { "type": "STRING" }
+                                    },
+                                    "answer": { "type": "STRING" },
+                                    "explanation": { "type": "STRING" }
+                                },
+                                "propertyOrdering": ["question", "options", "answer", "explanation"]
+                            }
+                        }
+                    }
+                };
+
+                const apiKey = ""; // Canvas will provide this at runtime
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const jsonResponse = result.candidates[0].content.parts[0].text;
+                    const generatedData = JSON.parse(jsonResponse);
+
+                    if (validateQuizData(generatedData)) {
+                        startQuiz(generatedData);
+                    } else {
+                        showMessageBox("Error", "Generated quiz data is not in the expected format. Please try a different topic or regenerate.");
+                    }
+                } else {
+                    showMessageBox("Error", "Failed to generate quiz questions. No valid response from AI.");
+                }
+            } catch (error) {
+                console.error("Error generating quiz:", error);
+                showMessageBox("Error", "An error occurred during quiz generation. Please try again. " + error.message);
+            } finally {
+                // Hide loading indicator and re-enable buttons
+                loadingIndicator.style.display = 'none';
+                generationStatus.classList.add('hidden');
+                generateQuizButton.disabled = false;
+                loadPastedQuizButton.disabled = false;
+                jsonPasteArea.disabled = false;
+                jsonUploadInput.disabled = false;
+                topicInput.disabled = false;
+                languageSelect.disabled = false;
+                numQuestionsInput.disabled = false;
+            }
+        });
+
 
         /**
          * Loads and displays the current question and its options.
@@ -433,10 +594,13 @@
         // Event listener for Restart Quiz button
         restartQuizButton.addEventListener('click', () => {
             quizResultSection.classList.add('hidden');
-            jsonInputSection.classList.remove('hidden'); // Show JSON input section
+            inputSelectionSection.classList.remove('hidden'); // Show the main input selection screen
             jsonPasteArea.value = ''; // Clear text area
             jsonUploadInput.value = ''; // Clear file input
             fileStatusParagraph.textContent = "No file chosen"; // Reset file status
+            topicInput.value = ''; // Clear topic input
+            languageSelect.value = 'English'; // Reset language to default
+            numQuestionsInput.value = '5'; // Reset number of questions to default
             quizData = [];
             currentQuestionIndex = 0;
             score = 0;
@@ -446,7 +610,7 @@
         // Initial state setup
         window.onload = () => {
             // Ensure sections are correctly hidden/shown on initial load
-            jsonInputSection.classList.remove('hidden');
+            inputSelectionSection.classList.remove('hidden');
             quizDisplaySection.classList.add('hidden');
             quizResultSection.classList.add('hidden');
         };
