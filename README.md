@@ -12,11 +12,6 @@
     "options": ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
     "answer": "Carbon Dioxide",
     "explanation": "Plants absorb carbon dioxide for photosynthesis, converting it into oxygen and glucose."
-  },
-  {
-    "question": "What is the primary ingredient in guacamole?",
-    "options": ["Tomato", "Onion", "Avocado", "Lime"],
-    "answer": "Avocado",
-    "explanation": "Guacamole is a delicious dip primarily made from mashed ripe avocados."
   }
+  
 ]
