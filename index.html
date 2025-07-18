@@ -133,6 +133,7 @@
             height: 30px;
             animation: spin 1s linear infinite;
             display: none; /* Hidden by default */
+            margin: 0 auto; /* Center the spinner */
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -235,7 +236,13 @@
         <div id="quiz-result-section" class="hidden text-center">
             <h2 class="text-2xl font-bold text-gray-800 mb-4">Quiz Completed!</h2>
             <p class="text-xl text-gray-700 mb-6">Your Score: <span id="final-score" class="font-bold text-blue-600">0</span> / <span id="total-questions-result" class="font-bold text-gray-600">0</span></p>
-            <button id="restart-quiz-button" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out">Restart Quiz</button>
+            
+            <div class="flex flex-col gap-4 mt-6">
+                <input type="text" id="history-filename-input" placeholder="Enter filename (e.g., my_quiz_history.json)" class="w-full max-w-xs mx-auto p-2 border border-gray-300 rounded-lg text-center">
+                <button id="download-history-button" class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out w-full max-w-xs mx-auto">Download Quiz History</button>
+                <button id="generate-practice-button" class="bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out w-full max-w-xs mx-auto hidden">Generate Practice Questions (Based on Mistakes)</button>
+                <button id="restart-quiz-button" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out w-full max-w-xs mx-auto">Start New Quiz</button>
+            </div>
         </div>
     </div>
 
@@ -247,10 +254,11 @@
     </div>
 
     <script>
-        let quizData = [];
+        // Global variables for quiz state
+        let quizData = []; // Stores all quiz questions, options, answers, explanations, and userAnswer
         let currentQuestionIndex = 0;
-        let score = 0; // Score will be calculated dynamically based on stored answers
-        let quizStarted = false;
+        let quizStarted = false; // Flag to indicate if a quiz is active
+        let currentQuizTopic = ''; // Stores the topic of the generated quiz for filename suggestion
 
         // Get DOM elements
         const inputSelectionSection = document.getElementById('input-selection-section');
@@ -264,7 +272,7 @@
         const languageSelect = document.getElementById('language-select');
         const numQuestionsInput = document.getElementById('num-questions-input');
         const difficultySelect = document.getElementById('difficulty-select');
-        const apiKeyInput = document.getElementById('api-key-input'); // New API Key input
+        const apiKeyInput = document.getElementById('api-key-input');
         const generateQuizButton = document.getElementById('generate-quiz-button');
         const loadingIndicator = document.getElementById('loading-indicator');
         const generationStatus = document.getElementById('generation-status');
@@ -279,6 +287,9 @@
         const nextQuestionButton = document.getElementById('next-question-button');
         const finalScoreSpan = document.getElementById('final-score');
         const totalQuestionsResultSpan = document.getElementById('total-questions-result');
+        const historyFilenameInput = document.getElementById('history-filename-input'); // New input for filename
+        const downloadHistoryButton = document.getElementById('download-history-button'); // New button
+        const generatePracticeButton = document.getElementById('generate-practice-button'); // New button
         const restartQuizButton = document.getElementById('restart-quiz-button');
 
         const messageBox = document.getElementById('message-box');
@@ -286,7 +297,7 @@
         const messageContent = document.getElementById('message-content');
         const messageBoxOkButton = document.getElementById('message-box-ok-button');
 
-        const LOCAL_STORAGE_API_KEY = 'geminiApiKey'; // Key for local storage
+        const LOCAL_STORAGE_API_KEY = 'geminiApiKey'; // Key for local storage for API key
 
         /**
          * Displays a custom message box instead of alert().
@@ -306,6 +317,8 @@
 
         /**
          * Validates the structure of the parsed quiz data.
+         * Ensures each question has 'question', 'options' (array of strings), 'answer' (string),
+         * and optionally 'explanation' (string).
          * @param {Array} data - The parsed JSON array.
          * @returns {boolean} True if data is valid, false otherwise.
          */
@@ -315,23 +328,25 @@
             }
             return data.every(q =>
                 typeof q.question === 'string' &&
-                Array.isArray(q.options) && q.options.every(o => typeof o === 'string') &&
+                Array.isArray(q.options) && q.options.length >= 2 && q.options.every(o => typeof o === 'string') &&
                 typeof q.answer === 'string' &&
+                q.options.includes(q.answer) && // Ensure answer is one of the options
                 (typeof q.explanation === 'string' || q.explanation === undefined || q.explanation === null)
             );
         }
 
         /**
          * Initializes and starts the quiz with the provided quiz data.
+         * Sets up the initial state and displays the first question.
          * @param {Array} data - The validated quiz data.
          */
         function startQuiz(data) {
-            quizData = data.map(q => ({ ...q, userAnswer: null })); // Add userAnswer property
+            // Ensure each question has a userAnswer property, initialized to null if not present
+            quizData = data.map(q => ({ ...q, userAnswer: q.userAnswer !== undefined ? q.userAnswer : null }));
             quizStarted = true;
             inputSelectionSection.classList.add('hidden');
             quizDisplaySection.classList.remove('hidden');
             currentQuestionIndex = 0;
-            score = 0; // Reset score
             loadQuestion();
         }
 
@@ -363,47 +378,28 @@
             try {
                 const parsedData = JSON.parse(jsonString);
                 if (validateQuizData(parsedData)) {
+                    // When loading from a file, the topic is unknown, so set a default or infer
+                    currentQuizTopic = parsedData[0]?.topic || 'Loaded Quiz'; // Assuming topic might be in first question or default
                     startQuiz(parsedData);
                 } else {
-                    showMessageBox("Error", "Invalid quiz data structure. Please ensure it follows the correct format.");
+                    showMessageBox("Error", "Invalid quiz data structure. Please ensure it follows the correct format (question, options, answer, explanation).");
                     quizData = []; // Clear data if invalid
                 }
             } catch (error) {
-                showMessageBox("Error", "Failed to parse JSON. Please ensure the content is valid JSON.");
+                showMessageBox("Error", "Failed to parse JSON. Please ensure the content is valid JSON. Error: " + error.message);
                 quizData = []; // Clear data if parsing fails
             }
         });
 
-        // Event listener for Generate Quiz button
-        generateQuizButton.addEventListener('click', async () => {
-            const topic = topicInput.value.trim();
-            const language = languageSelect.value;
-            const numQuestions = parseInt(numQuestionsInput.value, 10);
-            const difficulty = difficultySelect.value;
-            const apiKey = apiKeyInput.value.trim(); // Get API Key from input
-
-            if (!apiKey) {
-                showMessageBox("Error", "Please enter your Gemini API Key to generate questions.");
-                return;
-            }
-            if (!topic) {
-                showMessageBox("Info", "Please enter a topic to generate questions.");
-                return;
-            }
-            if (isNaN(numQuestions) || numQuestions < 1 || numQuestions > 10) {
-                showMessageBox("Info", "Please enter a valid number of questions between 1 and 10.");
-                return;
-            }
-
-            // Save API key to local storage
-            try {
-                localStorage.setItem(LOCAL_STORAGE_API_KEY, apiKey);
-            } catch (e) {
-                console.warn("Could not save API key to local storage:", e);
-                showMessageBox("Warning", "Could not save API key to local storage. You may need to enter it again next time.");
-            }
-
-
+        /**
+         * Handles the generation of quiz questions using the Gemini API.
+         * @param {string} topic - The topic for the quiz.
+         * @param {string} language - The language for the quiz.
+         * @param {number} numQuestions - The number of questions to generate.
+         * @param {string} difficulty - The difficulty level.
+         * @param {string} apiKey - The Gemini API key.
+         */
+        async function generateQuiz(topic, language, numQuestions, difficulty, apiKey) {
             // Show loading indicator
             loadingIndicator.style.display = 'block';
             generationStatus.classList.remove('hidden');
@@ -415,11 +411,11 @@
             languageSelect.disabled = true;
             numQuestionsInput.disabled = true;
             difficultySelect.disabled = true;
-            apiKeyInput.disabled = true; // Disable API key input during generation
+            apiKeyInput.disabled = true;
 
             try {
                 let chatHistory = [];
-                const prompt = `Generate ${numQuestions} multiple-choice quiz questions in ${language} about "${topic}". Each question should have 4 options, one correct answer, and an explanation. The questions should be at a "${difficulty}" level. Provide the output as a JSON array of objects. Each object must have 'question' (string), 'options' (array of strings), 'answer' (string, matching one of the options), and 'explanation' (string). Example format: [{"question": "...", "options": ["...", "..."], "answer": "...", "explanation": "..."}, ...]`;
+                const prompt = `Generate ${numQuestions} multiple-choice quiz questions in ${language} about "${topic}". Each question should have 4 options, one correct answer, and an explanation. The questions should be at a "${difficulty}" level. Provide the output as a JSON array of objects. Each object must have 'question' (string), 'options' (array of strings), 'answer' (string, matching one of the options), and 'explanation' (string). Example format: [{"question": "What is the capital of France?", "options": ["Berlin", "Madrid", "Paris", "Rome"], "answer": "Paris", "explanation": "Paris is the capital and most populous city of France."}, ...]`;
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
 
                 const payload = {
@@ -445,7 +441,6 @@
                     }
                 };
 
-                // Use the API key from the input field
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                 const response = await fetch(apiUrl, {
@@ -463,6 +458,7 @@
                     const generatedData = JSON.parse(jsonResponse);
 
                     if (validateQuizData(generatedData)) {
+                        currentQuizTopic = topic; // Store the topic for potential history filename
                         startQuiz(generatedData);
                     } else {
                         showMessageBox("Error", "Generated quiz data is not in the expected format. Please try a different topic or regenerate.");
@@ -485,13 +481,46 @@
                 languageSelect.disabled = false;
                 numQuestionsInput.disabled = false;
                 difficultySelect.disabled = false;
-                apiKeyInput.disabled = false; // Re-enable API key input
+                apiKeyInput.disabled = false;
             }
+        }
+
+        // Event listener for Generate Quiz button
+        generateQuizButton.addEventListener('click', async () => {
+            const topic = topicInput.value.trim();
+            const language = languageSelect.value;
+            const numQuestions = parseInt(numQuestionsInput.value, 10);
+            const difficulty = difficultySelect.value;
+            const apiKey = apiKeyInput.value.trim();
+
+            if (!apiKey) {
+                showMessageBox("Error", "Please enter your Gemini API Key to generate questions.");
+                return;
+            }
+            if (!topic) {
+                showMessageBox("Info", "Please enter a topic to generate questions.");
+                return;
+            }
+            if (isNaN(numQuestions) || numQuestions < 1 || numQuestions > 10) {
+                showMessageBox("Info", "Please enter a valid number of questions between 1 and 10.");
+                return;
+            }
+
+            // Save API key to local storage
+            try {
+                localStorage.setItem(LOCAL_STORAGE_API_KEY, apiKey);
+            } catch (e) {
+                console.warn("Could not save API key to local storage:", e);
+                showMessageBox("Warning", "Could not save API key to local storage. You may need to enter it again next time.");
+            }
+
+            await generateQuiz(topic, language, numQuestions, difficulty, apiKey);
         });
 
 
         /**
          * Loads and displays the current question and its options.
+         * Handles displaying user's previous answers and feedback if available.
          */
         function loadQuestion() {
             optionsContainer.innerHTML = ''; // Clear previous options
@@ -527,11 +556,12 @@
                                 button.classList.add('incorrect');
                             }
                         }
-                        // Highlight the correct answer even if user was wrong
+                        // Always highlight the correct answer if the question has been answered
                         if (option === currentQuestion.answer && option !== currentQuestion.userAnswer) {
-                             button.classList.add('correct');
+                            button.classList.add('correct');
                         }
                     } else {
+                        // Only add event listener if not previously answered
                         button.addEventListener('click', () => selectOption(button));
                     }
                     optionsContainer.appendChild(button);
@@ -562,7 +592,9 @@
             // Disable all option buttons and remove their event listeners
             Array.from(optionsContainer.children).forEach(button => {
                 button.classList.add('disabled');
-                button.removeEventListener('click', () => selectOption(button));
+                // Remove existing event listeners to prevent multiple calls
+                const newButton = button.cloneNode(true);
+                button.parentNode.replaceChild(newButton, button);
             });
 
             // Apply styling based on correctness
@@ -617,16 +649,89 @@
 
         /**
          * Displays the final quiz results.
+         * Calculates the score and shows relevant buttons (download, practice).
          */
         function showResults() {
             // Calculate final score based on stored answers
-            score = quizData.filter(q => q.userAnswer === q.answer).length;
+            const correctAnswersCount = quizData.filter(q => q.userAnswer === q.answer).length;
+            const incorrectAnswersCount = quizData.length - correctAnswersCount;
 
             quizDisplaySection.classList.add('hidden');
             quizResultSection.classList.remove('hidden');
-            finalScoreSpan.textContent = score;
+            finalScoreSpan.textContent = correctAnswersCount;
             totalQuestionsResultSpan.textContent = quizData.length;
+
+            // Set default filename for history download
+            const defaultFilename = currentQuizTopic ? `${currentQuizTopic.replace(/\s+/g, '_').toLowerCase()}_quiz_history.json` : 'quiz_history.json';
+            historyFilenameInput.value = defaultFilename;
+
+            // Show/hide generate practice questions button
+            if (incorrectAnswersCount > 0) {
+                generatePracticeButton.classList.remove('hidden');
+            } else {
+                generatePracticeButton.classList.add('hidden');
+            }
         }
+
+        /**
+         * Triggers the download of the current quiz history as a JSON file.
+         */
+        downloadHistoryButton.addEventListener('click', () => {
+            if (quizData.length === 0) {
+                showMessageBox("Info", "No quiz data to save!");
+                return;
+            }
+            // Ensure the quizData contains userAnswer for all questions
+            const dataToSave = JSON.stringify(quizData, null, 2); // Pretty print JSON
+
+            const filename = historyFilenameInput.value.trim() || 'quiz_history.json';
+
+            const blob = new Blob([dataToSave], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url); // Clean up the URL object
+
+            showMessageBox("Success", `Your quiz history has been downloaded as '${filename}'. You can load it later using the 'Upload JSON File' option.`);
+        });
+
+        /**
+         * Generates new practice questions based on the current quiz's topic.
+         * This function can be enhanced to specifically target incorrect answers' topics.
+         */
+        generatePracticeButton.addEventListener('click', async () => {
+            const apiKey = apiKeyInput.value.trim();
+            if (!apiKey) {
+                showMessageBox("Error", "Please enter your Gemini API Key to generate practice questions.");
+                return;
+            }
+
+            if (!currentQuizTopic) {
+                showMessageBox("Info", "Cannot generate practice questions without a defined quiz topic. Please generate a new quiz first.");
+                return;
+            }
+
+            const language = languageSelect.value;
+            const numQuestions = parseInt(numQuestionsInput.value, 10); // Use the same number as last time
+            const difficulty = difficultySelect.value; // Use the same difficulty as last time
+
+            // Identify topics of incorrectly answered questions (simple approach: use the main quiz topic)
+            // For a more advanced approach, you'd parse explanations or question content to infer sub-topics.
+            const topicForPractice = currentQuizTopic;
+
+            showMessageBox("Generating...", `Generating ${numQuestions} practice questions on "${topicForPractice}"...`);
+            await generateQuiz(topicForPractice, language, numQuestions, difficulty, apiKey);
+            // After generation, startQuiz will be called internally by generateQuiz.
+            // Hide result section and show quiz display section
+            quizResultSection.classList.add('hidden');
+            quizDisplaySection.classList.remove('hidden');
+        });
+
 
         // Event listener for Restart Quiz button
         restartQuizButton.addEventListener('click', () => {
@@ -639,10 +744,11 @@
             languageSelect.value = 'English'; // Reset language to default
             numQuestionsInput.value = '5'; // Reset number of questions to default
             difficultySelect.value = 'HSSC exam level'; // Reset difficulty to default
-            quizData = [];
+            quizData = []; // Clear quiz data
             currentQuestionIndex = 0;
-            score = 0;
             quizStarted = false;
+            currentQuizTopic = ''; // Clear the current topic
+            generatePracticeButton.classList.add('hidden'); // Hide practice button
         });
 
         // Initial setup on window load
