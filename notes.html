@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSSC Group C Exam Prep - Notes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="main-container">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">HSSC Group C Exam Prep</h1>
+
+        <div class="flex justify-center gap-4 mb-6">
+            <a href="index.html" class="py-2 px-6 rounded-lg font-semibold text-gray-800 bg-gray-200 hover:bg-gray-300 transition duration-300">Home</a>
+            <button class="py-2 px-6 rounded-lg font-semibold text-white bg-teal-500 cursor-default">Notes</button>
+            <a href="quiz.html" class="py-2 px-6 rounded-lg font-semibold text-gray-800 bg-gray-200 hover:bg-gray-300 transition duration-300">Quiz</a>
+        </div>
+
+        <div id="notes-section">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Study Notes (Syllabus & AI-Generated)</h2>
+            <div class="flex flex-col gap-4">
+                <div>
+                    <label for="subject-select" class="block text-lg font-medium text-gray-700 mb-2">Select Subject:</label>
+                    <select id="subject-select" class="w-full p-3 border border-gray-300 rounded-lg text-lg">
+                        <option value="none">-- Select a Subject --</option>
+                        <option value="General Awareness">General Awareness</option>
+                        <option value="Computer Knowledge">Computer Knowledge</option>
+                        <option value="Reasoning">Reasoning</option>
+                        <option value="Quantitative Ability">Quantitative Ability</option>
+                        <option value="English Language">English Language</option>
+                        <option value="Hindi Language">Hindi Language</option>
+                        <option value="General Knowledge of Haryana">General Knowledge of Haryana</option>
+                    </select>
+                </div>
+                <div id="syllabus-display" class="syllabus-content hidden">
+                    <h3 id="syllabus-title" class="text-xl"></h3>
+                    <div id="syllabus-text"></div>
+                </div>
+
+                <div class="mt-6 border-t border-gray-200 pt-6">
+                    <p class="text-lg text-gray-700 font-semibold mb-3">Enter Topic for Notes:</p>
+                    <input type="text" id="notes-topic-input" placeholder="e.g., 'Ancient India' or 'CPU Architecture'" class="w-full p-2 border border-gray-300 rounded-lg mb-3">
+                    <div class="w-full">
+                        <label for="notes-language-select" class="block text-sm font-medium text-gray-700 mb-1">Language:</label>
+                        <select id="notes-language-select" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <option value="English">English</option>
+                            <option value="Hindi">Hindi</option>
+                        </select>
+                    </div>
+                    <div class="w-full mt-3">
+                        <label for="notes-length-select" class="block text-sm font-medium text-gray-700 mb-1">Notes Length:</label>
+                        <select id="notes-length-select" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <option value="brief">Brief (100-200 words)</option>
+                            <option value="standard" selected>Standard (250-400 words)</option>
+                            <option value="detailed">Detailed (500-800 words)</option>
+                            <option value="dynamic">Dynamic (Optimal for Topic)</option>
+                        </select>
+                    </div>
+                    <div class="w-full mt-3">
+                        <label for="notes-api-key-input" class="block text-sm font-medium text-gray-700 mb-1">Gemini API Key (saved locally):</label>
+                        <input type="password" id="notes-api-key-input" placeholder="Enter your API Key here" class="w-full p-2 border border-gray-300 rounded-lg">
+                    </div>
+                    <button id="check-topic-button" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out w-full max-w-xs mx-auto mt-4">Check Topic / Generate Notes</button>
+                    <div id="notes-loading-indicator" class="loading-spinner mt-4"></div>
+                    <p id="notes-generation-status" class="text-sm text-gray-600 hidden text-center">Processing request...</p>
+                </div>
+
+                <div id="topic-parts-section" class="mt-6 border-t border-gray-200 pt-6 hidden">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3" id="parts-prompt-text">This topic can be broken down into the following parts. Select one to learn more:</h3>
+                    <div id="topic-parts-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        </div>
+                    <button id="generate-full-notes-button" class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out w-full max-w-xs mx-auto mt-4">Generate Full Notes on this Topic</button>
+                    <button id="back-to-topic-input-button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out w-full max-w-xs mx-auto mt-2">Back to Topic Input</button>
+                </div>
+
+                <div id="generated-notes-display" class="generated-notes-content hidden">
+                    <h3 id="generated-notes-title" class="text-xl font-semibold mb-2"></h3>
+                    <div id="generated-notes-text"></div>
+                    <button id="back-to-parts-button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out w-full max-w-xs mx-auto mt-4 hidden">Back to Parts</button>
+                    <button id="start-new-notes-button" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out w-full max-w-xs mx-auto mt-2">Start New Notes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="message-box" class="message-box">
+        <h3 id="message-title"></h3>
+        <p id="message-content"></p>
+        <button id="message-box-ok-button">OK</button>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/notes.js"></script>
+</body>
+</html>
