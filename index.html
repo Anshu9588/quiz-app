@@ -116,7 +116,7 @@
             from { opacity: 0; transform: translate(-50%, -60%); }
             to { opacity: 1; transform: translate(-50%, -50%); }
         }
-        textarea, input[type="text"], input[type="number"], select {
+        textarea, input[type="text"], input[type="number"], select, input[type="password"] { /* Added input[type="password"] */
             width: 100%;
             padding: 10px;
             border-radius: 8px;
@@ -188,6 +188,20 @@
                         <input type="number" id="num-questions-input" value="5" min="1" max="10" class="w-full p-2 border border-gray-300 rounded-lg">
                     </div>
                 </div>
+                <div class="w-full">
+                    <label for="difficulty-select" class="block text-sm font-medium text-gray-700 mb-1">Difficulty Level:</label>
+                    <select id="difficulty-select" class="w-full p-2 border border-gray-300 rounded-lg">
+                        <option value="easy">Easy</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="hard">Hard</option>
+                        <option value="HSSC exam level" selected>HSSC Exam Level</option>
+                    </select>
+                </div>
+
+                <div class="w-full">
+                    <label for="api-key-input" class="block text-sm font-medium text-gray-700 mb-1">Gemini API Key (saved locally):</label>
+                    <input type="password" id="api-key-input" placeholder="Enter your API Key here" class="w-full p-2 border border-gray-300 rounded-lg">
+                </div>
 
                 <button id="generate-quiz-button" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out w-full max-w-xs">Generate Quiz</button>
                 <div id="loading-indicator" class="loading-spinner"></div>
@@ -247,8 +261,10 @@
         const jsonUploadInput = document.getElementById('json-upload');
         const fileStatusParagraph = document.getElementById('file-status');
         const topicInput = document.getElementById('topic-input');
-        const languageSelect = document.getElementById('language-select'); // New
-        const numQuestionsInput = document.getElementById('num-questions-input'); // New
+        const languageSelect = document.getElementById('language-select');
+        const numQuestionsInput = document.getElementById('num-questions-input');
+        const difficultySelect = document.getElementById('difficulty-select');
+        const apiKeyInput = document.getElementById('api-key-input'); // New API Key input
         const generateQuizButton = document.getElementById('generate-quiz-button');
         const loadingIndicator = document.getElementById('loading-indicator');
         const generationStatus = document.getElementById('generation-status');
@@ -269,6 +285,8 @@
         const messageTitle = document.getElementById('message-title');
         const messageContent = document.getElementById('message-content');
         const messageBoxOkButton = document.getElementById('message-box-ok-button');
+
+        const LOCAL_STORAGE_API_KEY = 'geminiApiKey'; // Key for local storage
 
         /**
          * Displays a custom message box instead of alert().
@@ -361,7 +379,13 @@
             const topic = topicInput.value.trim();
             const language = languageSelect.value;
             const numQuestions = parseInt(numQuestionsInput.value, 10);
+            const difficulty = difficultySelect.value;
+            const apiKey = apiKeyInput.value.trim(); // Get API Key from input
 
+            if (!apiKey) {
+                showMessageBox("Error", "Please enter your Gemini API Key to generate questions.");
+                return;
+            }
             if (!topic) {
                 showMessageBox("Info", "Please enter a topic to generate questions.");
                 return;
@@ -370,6 +394,15 @@
                 showMessageBox("Info", "Please enter a valid number of questions between 1 and 10.");
                 return;
             }
+
+            // Save API key to local storage
+            try {
+                localStorage.setItem(LOCAL_STORAGE_API_KEY, apiKey);
+            } catch (e) {
+                console.warn("Could not save API key to local storage:", e);
+                showMessageBox("Warning", "Could not save API key to local storage. You may need to enter it again next time.");
+            }
+
 
             // Show loading indicator
             loadingIndicator.style.display = 'block';
@@ -381,10 +414,12 @@
             topicInput.disabled = true;
             languageSelect.disabled = true;
             numQuestionsInput.disabled = true;
+            difficultySelect.disabled = true;
+            apiKeyInput.disabled = true; // Disable API key input during generation
 
             try {
                 let chatHistory = [];
-                const prompt = `Generate ${numQuestions} multiple-choice quiz questions in ${language} about "${topic}". Each question should have 4 options, one correct answer, and an explanation. The questions should be at the Higher Secondary School Certificate (HSSC) exam level. Provide the output as a JSON array of objects. Each object must have 'question' (string), 'options' (array of strings), 'answer' (string, matching one of the options), and 'explanation' (string). Example format: [{"question": "...", "options": ["...", "..."], "answer": "...", "explanation": "..."}, ...]`;
+                const prompt = `Generate ${numQuestions} multiple-choice quiz questions in ${language} about "${topic}". Each question should have 4 options, one correct answer, and an explanation. The questions should be at a "${difficulty}" level. Provide the output as a JSON array of objects. Each object must have 'question' (string), 'options' (array of strings), 'answer' (string, matching one of the options), and 'explanation' (string). Example format: [{"question": "...", "options": ["...", "..."], "answer": "...", "explanation": "..."}, ...]`;
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
 
                 const payload = {
@@ -410,7 +445,7 @@
                     }
                 };
 
-                const apiKey = ""; // Canvas will provide this at runtime
+                // Use the API key from the input field
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                 const response = await fetch(apiUrl, {
@@ -433,11 +468,11 @@
                         showMessageBox("Error", "Generated quiz data is not in the expected format. Please try a different topic or regenerate.");
                     }
                 } else {
-                    showMessageBox("Error", "Failed to generate quiz questions. No valid response from AI.");
+                    showMessageBox("Error", "Failed to generate quiz questions. No valid response from AI. Check your API key and network connection.");
                 }
             } catch (error) {
                 console.error("Error generating quiz:", error);
-                showMessageBox("Error", "An error occurred during quiz generation. Please try again. " + error.message);
+                showMessageBox("Error", "An error occurred during quiz generation. Please check your API key, network connection, or try a different topic. Error: " + error.message);
             } finally {
                 // Hide loading indicator and re-enable buttons
                 loadingIndicator.style.display = 'none';
@@ -449,6 +484,8 @@
                 topicInput.disabled = false;
                 languageSelect.disabled = false;
                 numQuestionsInput.disabled = false;
+                difficultySelect.disabled = false;
+                apiKeyInput.disabled = false; // Re-enable API key input
             }
         });
 
@@ -601,14 +638,21 @@
             topicInput.value = ''; // Clear topic input
             languageSelect.value = 'English'; // Reset language to default
             numQuestionsInput.value = '5'; // Reset number of questions to default
+            difficultySelect.value = 'HSSC exam level'; // Reset difficulty to default
             quizData = [];
             currentQuestionIndex = 0;
             score = 0;
             quizStarted = false;
         });
 
-        // Initial state setup
+        // Initial setup on window load
         window.onload = () => {
+            // Load API key from local storage if available
+            const savedApiKey = localStorage.getItem(LOCAL_STORAGE_API_KEY);
+            if (savedApiKey) {
+                apiKeyInput.value = savedApiKey;
+            }
+
             // Ensure sections are correctly hidden/shown on initial load
             inputSelectionSection.classList.remove('hidden');
             quizDisplaySection.classList.add('hidden');
