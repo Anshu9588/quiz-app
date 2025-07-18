@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Quiz App</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .option-button {
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 8px;
+            background-color: #edf2f7;
+            color: #2d3748;
+            text-align: left;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+        }
+        .option-button:hover:not(.correct):not(.incorrect):not(.disabled) {
+            background-color: #e2e8f0;
+            border-color: #cbd5e0;
+        }
+        .option-button.selected {
+            border-color: #4299e1;
+            box-shadow: 0 0 0 2px #bee3f8;
+        }
+        .option-button.correct {
+            background-color: #a7f3d0; /* green-200 */
+            color: #065f46; /* green-800 */
+            border-color: #34d399; /* green-500 */
+        }
+        .option-button.incorrect {
+            background-color: #fecaca; /* red-200 */
+            color: #991b1b; /* red-800 */
+            border-color: #ef4444; /* red-500 */
+        }
+        .option-button.disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        .explanation {
+            background-color: #e0f2fe; /* light blue */
+            border-left: 4px solid #38b2ac; /* teal-500 */
+            padding: 15px;
+            border-radius: 8px;
+            color: #2c5282;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 25px 35px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            text-align: center;
+            display: none; /* Hidden by default */
+            max-width: 90%;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .message-box h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+        .message-box p {
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            color: #4a5568;
+        }
+        .message-box button {
+            padding: 10px 25px;
+            background-color: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s ease;
+        }
+        .message-box button:hover {
+            background-color: #3182ce;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -60%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e0;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95em;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Simple Quiz App</h1>
+
+        <!-- JSON Input Section -->
+        <div id="json-input-section" class="flex flex-col items-center gap-4">
+            <p class="text-lg text-gray-700">Paste your Quiz JSON below:</p>
+            <textarea id="json-paste-area" placeholder='[{"question": "...", "options": ["...", "..."], "answer": "...", "explanation": "..."}, ...]' class="w-full"></textarea>
+            <button id="load-quiz-button" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out">Load Quiz</button>
+        </div>
+
+        <!-- Quiz Display Section -->
+        <div id="quiz-display-section" class="hidden">
+            <div class="mb-6">
+                <p class="text-sm text-gray-500 mb-2">Question <span id="current-question-number">1</span> of <span id="total-questions">0</span></p>
+                <h2 id="question-text" class="text-xl font-semibold text-gray-800 mb-4"></h2>
+                <div id="options-container" class="grid grid-cols-1 gap-3">
+                    <!-- Options will be loaded here by JavaScript -->
+                </div>
+            </div>
+
+            <div id="feedback-section" class="hidden flex flex-col gap-4">
+                <div id="explanation-box" class="explanation hidden">
+                    <p id="explanation-text"></p>
+                </div>
+            </div>
+
+            <div id="quiz-navigation" class="flex justify-between mt-6">
+                <button id="prev-question-button" class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed" disabled>Previous</button>
+                <button id="next-question-button" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out">Next</button>
+            </div>
+        </div>
+
+        <!-- Quiz Result Section -->
+        <div id="quiz-result-section" class="hidden text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Quiz Completed!</h2>
+            <p class="text-xl text-gray-700 mb-6">Your Score: <span id="final-score" class="font-bold text-blue-600">0</span> / <span id="total-questions-result" class="font-bold text-gray-600">0</span></p>
+            <button id="restart-quiz-button" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out">Restart Quiz</button>
+        </div>
+    </div>
+
+    <!-- Custom Message Box -->
+    <div id="message-box" class="message-box">
+        <h3 id="message-title"></h3>
+        <p id="message-content"></p>
+        <button id="message-box-ok-button">OK</button>
+    </div>
+
+    <script>
+        let quizData = [];
+        let currentQuestionIndex = 0;
+        let score = 0; // Score will be calculated dynamically based on stored answers
+        let quizStarted = false;
+
+        // Get DOM elements
+        const jsonInputSection = document.getElementById('json-input-section');
+        const quizDisplaySection = document.getElementById('quiz-display-section');
+        const quizResultSection = document.getElementById('quiz-result-section');
+        const jsonPasteArea = document.getElementById('json-paste-area');
+        const loadQuizButton = document.getElementById('load-quiz-button');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const currentQuestionNumberSpan = document.getElementById('current-question-number');
+        const totalQuestionsSpan = document.getElementById('total-questions');
+        const feedbackSection = document.getElementById('feedback-section');
+        const explanationBox = document.getElementById('explanation-box');
+        const explanationText = document.getElementById('explanation-text');
+        const prevQuestionButton = document.getElementById('prev-question-button'); // New button
+        const nextQuestionButton = document.getElementById('next-question-button');
+        const finalScoreSpan = document.getElementById('final-score');
+        const totalQuestionsResultSpan = document.getElementById('total-questions-result');
+        const restartQuizButton = document.getElementById('restart-quiz-button');
+
+        const messageBox = document.getElementById('message-box');
+        const messageTitle = document.getElementById('message-title');
+        const messageContent = document.getElementById('message-content');
+        const messageBoxOkButton = document.getElementById('message-box-ok-button');
+
+        /**
+         * Displays a custom message box instead of alert().
+         * @param {string} title - The title of the message box.
+         * @param {string} message - The content message.
+         */
+        function showMessageBox(title, message) {
+            messageTitle.textContent = title;
+            messageContent.textContent = message;
+            messageBox.style.display = 'block';
+        }
+
+        // Event listener for the OK button in the message box
+        messageBoxOkButton.addEventListener('click', () => {
+            messageBox.style.display = 'none';
+        });
+
+        // Event listener for Load Quiz button
+        loadQuizButton.addEventListener('click', () => {
+            const jsonString = jsonPasteArea.value.trim();
+            if (!jsonString) {
+                showMessageBox("Info", "Please paste your quiz JSON into the text area.");
+                return;
+            }
+
+            try {
+                const parsedData = JSON.parse(jsonString);
+                if (!Array.isArray(parsedData) || parsedData.length === 0) {
+                    showMessageBox("Error", "Invalid JSON format. Please paste an array of question objects.");
+                    quizData = []; // Clear data if invalid
+                } else {
+                    // Validate each question object structure and initialize userAnswer
+                    const isValid = parsedData.every(q =>
+                        typeof q.question === 'string' &&
+                        Array.isArray(q.options) && q.options.every(o => typeof o === 'string') &&
+                        typeof q.answer === 'string' &&
+                        (typeof q.explanation === 'string' || q.explanation === undefined || q.explanation === null)
+                    );
+
+                    if (!isValid) {
+                        showMessageBox("Error", "Invalid quiz data structure. Each question must have 'question' (string), 'options' (array of strings), 'answer' (string), and optionally 'explanation' (string).");
+                        quizData = []; // Clear data if invalid
+                    } else {
+                        quizData = parsedData.map(q => ({ ...q, userAnswer: null })); // Add userAnswer property
+                        quizStarted = true;
+                        jsonInputSection.classList.add('hidden');
+                        quizDisplaySection.classList.remove('hidden');
+                        currentQuestionIndex = 0;
+                        score = 0; // Reset score
+                        loadQuestion();
+                    }
+                }
+            } catch (error) {
+                showMessageBox("Error", "Failed to parse JSON. Please ensure the pasted content is valid JSON.");
+                quizData = []; // Clear data if parsing fails
+            }
+        });
+
+        /**
+         * Loads and displays the current question and its options.
+         */
+        function loadQuestion() {
+            optionsContainer.innerHTML = ''; // Clear previous options
+            feedbackSection.classList.add('hidden');
+            explanationBox.classList.add('hidden');
+
+            // Update navigation button states
+            prevQuestionButton.disabled = currentQuestionIndex === 0;
+            nextQuestionButton.textContent = (currentQuestionIndex === quizData.length - 1) ? 'Show Results' : 'Next';
+
+            if (currentQuestionIndex < quizData.length) {
+                const currentQuestion = quizData[currentQuestionIndex];
+                questionText.textContent = currentQuestion.question;
+                currentQuestionNumberSpan.textContent = currentQuestionIndex + 1;
+                totalQuestionsSpan.textContent = quizData.length;
+
+                // Check if an answer was previously selected for this question
+                const previouslyAnswered = currentQuestion.userAnswer !== null;
+
+                currentQuestion.options.forEach((option) => {
+                    const button = document.createElement('button');
+                    button.textContent = option;
+                    button.classList.add('option-button');
+                    button.setAttribute('data-option', option);
+
+                    if (previouslyAnswered) {
+                        button.classList.add('disabled'); // Disable all if already answered
+                        if (option === currentQuestion.userAnswer) {
+                            button.classList.add('selected'); // Highlight user's previous choice
+                            if (option === currentQuestion.answer) {
+                                button.classList.add('correct');
+                            } else {
+                                button.classList.add('incorrect');
+                            }
+                        }
+                        // Highlight the correct answer even if user was wrong
+                        if (option === currentQuestion.answer && option !== currentQuestion.userAnswer) {
+                             button.classList.add('correct');
+                        }
+                    } else {
+                        button.addEventListener('click', () => selectOption(button));
+                    }
+                    optionsContainer.appendChild(button);
+                });
+
+                // If previously answered, show feedback immediately
+                if (previouslyAnswered) {
+                    showFeedback(currentQuestion);
+                }
+            } else {
+                // Quiz finished if navigating past the last question
+                showResults();
+            }
+        }
+
+        /**
+         * Handles the selection of an option, provides immediate feedback, and stores the answer.
+         * @param {HTMLElement} clickedButton - The button element that was clicked.
+         */
+        function selectOption(clickedButton) {
+            const currentQuestion = quizData[currentQuestionIndex];
+            const userAnswer = clickedButton.getAttribute('data-option');
+            const correctAnswer = currentQuestion.answer;
+
+            // Store the user's answer
+            currentQuestion.userAnswer = userAnswer;
+
+            // Disable all option buttons and remove their event listeners
+            Array.from(optionsContainer.children).forEach(button => {
+                button.classList.add('disabled');
+                button.removeEventListener('click', () => selectOption(button));
+            });
+
+            // Apply styling based on correctness
+            if (userAnswer === correctAnswer) {
+                clickedButton.classList.add('correct');
+            } else {
+                clickedButton.classList.add('incorrect');
+                // Highlight the correct answer if the user was wrong
+                Array.from(optionsContainer.children).forEach(button => {
+                    if (button.getAttribute('data-option') === correctAnswer) {
+                        button.classList.add('correct');
+                    }
+                });
+            }
+
+            // Show feedback (explanation)
+            showFeedback(currentQuestion);
+        }
+
+        /**
+         * Displays the explanation and feedback section.
+         * @param {object} question - The current question object.
+         */
+        function showFeedback(question) {
+            if (question.explanation) {
+                explanationText.textContent = question.explanation;
+                explanationBox.classList.remove('hidden');
+            } else {
+                explanationBox.classList.add('hidden');
+            }
+            feedbackSection.classList.remove('hidden');
+        }
+
+        // Event listener for Previous Question button
+        prevQuestionButton.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        });
+
+        // Event listener for Next Question button
+        nextQuestionButton.addEventListener('click', () => {
+            if (currentQuestionIndex < quizData.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                // If it's the last question, show results
+                showResults();
+            }
+        });
+
+        /**
+         * Displays the final quiz results.
+         */
+        function showResults() {
+            // Calculate final score based on stored answers
+            score = quizData.filter(q => q.userAnswer === q.answer).length;
+
+            quizDisplaySection.classList.add('hidden');
+            quizResultSection.classList.remove('hidden');
+            finalScoreSpan.textContent = score;
+            totalQuestionsResultSpan.textContent = quizData.length;
+        }
+
+        // Event listener for Restart Quiz button
+        restartQuizButton.addEventListener('click', () => {
+            quizResultSection.classList.add('hidden');
+            jsonInputSection.classList.remove('hidden'); // Show JSON input section
+            jsonPasteArea.value = ''; // Clear text area
+            quizData = [];
+            currentQuestionIndex = 0;
+            score = 0;
+            quizStarted = false;
+        });
+
+        // Initial state setup
+        window.onload = () => {
+            // Ensure sections are correctly hidden/shown on initial load
+            jsonInputSection.classList.remove('hidden');
+            quizDisplaySection.classList.add('hidden');
+            quizResultSection.classList.add('hidden');
+        };
+
+    </script>
+</body>
+</html>
