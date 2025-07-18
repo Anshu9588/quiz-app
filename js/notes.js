@@ -1,170 +1,169 @@
 // js/notes.js
 
-// Syllabus data (remains unchanged)
+// Syllabus data
 const syllabusData = {
   "General Awareness": `Questions will be designed to test the ability of the candidate's General Awareness of the environment and its relevance to the society. The questions will also be designed to test knowledge of the current events and of such matters of everyday observation as may be expected of an examinee appearing for the test. The test will include questions relating to India and neighboring countries, especially pertaining to:
     <ul>
-        <li>History</li>
-        <li>Indian Polity & Constitution</li>
-        <li>Art & Culture</li>
-        <li>Geography</li>
-        <li>Economics</li>
-        <li>General Policy</li>
-        <li>National/International Organizations /Institutions</li>
-        <li>Environment</li>
-        <li>Globalization</li>
-        <li>Climate</li>
-        <li>Events</li>
-        <li>General Science</li>
+        <li data-topic="History">History</li>
+        <li data-topic="Indian Polity & Constitution">Indian Polity & Constitution</li>
+        <li data-topic="Art & Culture">Art & Culture</li>
+        <li data-topic="Geography">Geography</li>
+        <li data-topic="Economics">Economics</li>
+        <li data-topic="General Policy">General Policy</li>
+        <li data-topic="National/International Organizations /Institutions">National/International Organizations /Institutions</li>
+        <li data-topic="Environment">Environment</li>
+        <li data-topic="Globalization">Globalization</li>
+        <li data-topic="Climate">Climate</li>
+        <li data-topic="Events">Events</li>
+        <li data-topic="General Science">General Science</li>
     </ul>`,
   "Computer Knowledge": `
     <h3>Computer Basics:</h3>
     <ul>
-        <li>Organization of a computer</li>
-        <li>Central Processing Unit (CPU)</li>
-        <li>Input/output devices</li>
-        <li>Computer memory</li>
-        <li>Memory organization</li>
-        <li>Back-up devices</li>
-        <li>PORTS</li>
-        <li>Windows Explorer</li>
-        <li>Keyboard shortcuts</li>
-        <li>Windows Operating system including basics of Microsoft Office like MS Word, MS Excel and PowerPoint.</li>
+        <li data-topic="Organization of a Computer">Organization of a computer</li>
+        <li data-topic="Central Processing Unit (CPU)">Central Processing Unit (CPU)</li>
+        <li data-topic="Input/Output Devices">Input/output devices</li>
+        <li data-topic="Computer Memory">Computer memory</li>
+        <li data-topic="Memory Organization">Memory organization</li>
+        <li data-topic="Backup Devices">Back-up devices</li>
+        <li data-topic="PORTS">PORTS</li>
+        <li data-topic="Windows Explorer">Windows Explorer</li>
+        <li data-topic="Keyboard Shortcuts">Keyboard shortcuts</li>
+        <li data-topic="Windows Operating System">Windows Operating system including basics of Microsoft Office like MS Word, MS Excel and PowerPoint.</li>
     </ul>
     <h3>Working with Internet and E-mails:</h3>
     <ul>
-        <li>Web Browse & Searching</li>
-        <li>Downloading & Uploading</li>
-        <li>Managing an E-mail Account</li>
+        <li data-topic="Web Browse & Searching">Web Browse & Searching</li>
+        <li data-topic="Downloading & Uploading">Downloading & Uploading</li>
+        <li data-topic="Managing an Email Account">Managing an E-mail Account</li>
     </ul>`,
   Reasoning: `The syllabus includes questions of both verbal and non-verbal types. Test may include questions on:
     <ul>
-        <li>Semantic Analogy</li>
-        <li>Symbolic operations</li>
-        <li>Symbolic Number Analogy</li>
-        <li>Trends</li>
-        <li>Figural Analogy</li>
-        <li>Space Orientation</li>
-        <li>Semantic Classification</li>
-        <li>Observation</li>
-        <li>Relationship</li>
-        <li>Concepts</li>
-        <li>Venn Diagrams</li>
-        <li>Symbolic, Number Classification</li>
-        <li>Drawing inferences</li>
-        <li>Figural Classification</li>
-        <li>Punched hole pattern-folding & unfolding</li>
-        <li>Semantic Series</li>
-        <li>Figural Pattern folding and completion</li>
-        <li>Number series</li>
-        <li>Embedded figures</li>
-        <li>Figural series</li>
-        <li>Critical thinking</li>
-        <li>Problem solving</li>
-        <li>Emotional intelligence</li>
-        <li>Arithmetical number series</li>
-        <li>Arithmetical reasoning</li>
-        <li>Word building</li>
-        <li>Social intelligence</li>
-        <li>Coding and decoding</li>
-        <li>Other sub-topics etc.</li>
+        <li data-topic="Semantic Analogy">Semantic Analogy</li>
+        <li data-topic="Symbolic Operations">Symbolic operations</li>
+        <li data-topic="Symbolic Number Analogy">Symbolic Number Analogy</li>
+        <li data-topic="Trends">Trends</li>
+        <li data-topic="Figural Analogy">Figural Analogy</li>
+        <li data-topic="Space Orientation">Space Orientation</li>
+        <li data-topic="Semantic Classification">Semantic Classification</li>
+        <li data-topic="Observation">Observation</li>
+        <li data-topic="Relationship">Relationship</li>
+        <li data-topic="Concepts">Concepts</li>
+        <li data-topic="Venn Diagrams">Venn Diagrams</li>
+        <li data-topic="Symbolic, Number Classification">Symbolic, Number Classification</li>
+        <li data-topic="Drawing Inferences">Drawing inferences</li>
+        <li data-topic="Figural Classification">Figural Classification</li>
+        <li data-topic="Punched Hole Pattern-Folding & Unfolding">Punched hole pattern-folding & unfolding</li>
+        <li data-topic="Semantic Series">Semantic Series</li>
+        <li data-topic="Figural Pattern Folding and Completion">Figural Pattern folding and completion</li>
+        <li data-topic="Number Series">Number series</li>
+        <li data-topic="Embedded Figures">Embedded figures</li>
+        <li data-topic="Figural Series">Figural series</li>
+        <li data-topic="Critical Thinking">Critical thinking</li>
+        <li data-topic="Problem Solving">Problem solving</li>
+        <li data-topic="Emotional Intelligence">Emotional intelligence</li>
+        <li data-topic="Arithmetical Number Series">Arithmetical number series</li>
+        <li data-topic="Arithmetical Reasoning">Arithmetical reasoning</li>
+        <li data-topic="Word Building">Word building</li>
+        <li data-topic="Social Intelligence">Social intelligence</li>
+        <li data-topic="Coding and Decoding">Coding and decoding</li>
+        <li data-topic="Other Reasoning Topics">Other sub-topics etc.</li>
     </ul>`,
   "Quantitative Ability": `The test will cover:
     <ul>
-        <li>Number System including questions on Simplification, Decimals, Fractions, Relationship between numbers</li>
-        <li>L.C.M., H.C.F.</li>
-        <li>Ratio & Proportion</li>
-        <li>Percentage</li>
-        <li>Roots</li>
-        <li>Average</li>
-        <li>Profit & Loss</li>
-        <li>Discount</li>
-        <li>Simple & Compound Interest</li>
-        <li>Mensuration</li>
-        <li>Partnership business</li>
-        <li>Mixture and Allegation</li>
-        <li>Time & Work</li>
-        <li>Time & Distance</li>
-        <li>Tables & Graphs</li>
-        <li>Trigonometry</li>
-        <li>Basic Algebra</li>
-        <li>Geometry etc.</li>
+        <li data-topic="Number System">Number System including questions on Simplification, Decimals, Fractions, Relationship between numbers</li>
+        <li data-topic="LCM & HCF">L.C.M., H.C.F.</li>
+        <li data-topic="Ratio & Proportion">Ratio & Proportion</li>
+        <li data-topic="Percentage">Percentage</li>
+        <li data-topic="Roots">Roots</li>
+        <li data-topic="Average">Average</li>
+        <li data-topic="Profit & Loss">Profit & Loss</li>
+        <li data-topic="Discount">Discount</li>
+        <li data-topic="Simple & Compound Interest">Simple & Compound Interest</li>
+        <li data-topic="Mensuration">Mensuration</li>
+        <li data-topic="Partnership Business">Partnership business</li>
+        <li data-topic="Mixture and Allegation">Mixture and Allegation</li>
+        <li data-topic="Time & Work">Time & Work</li>
+        <li data-topic="Time & Distance">Time & Distance</li>
+        <li data-topic="Tables & Graphs">Tables & Graphs</li>
+        <li data-topic="Trigonometry">Trigonometry</li>
+        <li data-topic="Basic Algebra">Basic Algebra</li>
+        <li data-topic="Geometry">Geometry etc.</li>
     </ul>`,
   "English Language": `
     <ul>
-        <li>Spot the Error</li>
-        <li>Fill in the Blanks</li>
-        <li>Synonyms/ Homonyms</li>
-        <li>Antonyms</li>
-        <li>Spellings/ Detecting mis-spelt words</li>
-        <li>Idioms & Phrases</li>
-        <li>One word substitution</li>
-        <li>Improvement of Sentences</li>
-        <li>Active/ Passive Voice of Verbs</li>
-        <li>Conversion into Direct/ Indirect narration</li>
-        <li>Shuffling of Sentence parts</li>
-        <li>Shuffling of Sentences in a passage</li>
-        <li>Tenses</li>
-        <li>Cloze Passage</li>
-        <li>Comprehension Passage etc.</li>
+        <li data-topic="Spot the Error">Spot the Error</li>
+        <li data-topic="Fill in the Blanks">Fill in the Blanks</li>
+        <li data-topic="Synonyms/Homonyms">Synonyms/ Homonyms</li>
+        <li data-topic="Antonyms">Antonyms</li>
+        <li data-topic="Spellings/Detecting Mis-spelt Words">Spellings/ Detecting mis-spelt words</li>
+        <li data-topic="Idioms & Phrases">Idioms & Phrases</li>
+        <li data-topic="One Word Substitution">One word substitution</li>
+        <li data-topic="Improvement of Sentences">Improvement of Sentences</li>
+        <li data-topic="Active/Passive Voice of Verbs">Active/ Passive Voice of Verbs</li>
+        <li data-topic="Conversion into Direct/Indirect Narration">Conversion into Direct/ Indirect narration</li>
+        <li data-topic="Shuffling of Sentence Parts">Shuffling of Sentence parts</li>
+        <li data-topic="Shuffling of Sentences in a Passage">Shuffling of Sentences in a passage</li>
+        <li data-topic="Tenses">Tenses</li>
+        <li data-topic="Cloze Passage">Cloze Passage</li>
+        <li data-topic="Comprehension Passage">Comprehension Passage etc.</li>
     </ul>`,
   "Hindi Language": `
     <ul>
-        <li>शब्द</li>
-        <li>अलंकार</li>
-        <li>विकारीशब्द</li>
-        <li>वाक्य</li>
-        <li>अविकारीशब्द</li>
-        <li>पद</li>
-        <li>पदबंध</li>
-        <li>मुहावरें</li>
-        <li>लोकोक्तियां</li>
-        <li>संधि</li>
-        <li>उपसर्ग</li>
-        <li>प्रत्यय</li>
-        <li>समास</li>
-        <li>पर्यायवाची</li>
-        <li>विलोम व अनेकार्थीशब्द</li>
-        <li>अयोगवाह</li>
-        <li>वाक्य शोधन</li>
-        <li>निपात ( अवधारक)</li>
-        <li>विरामचिन्ह</li>
-        <li>संबंधबोधक</li>
-        <li>अनेकशब्दों के लिए एक शब्द</li>
-        <li>एकार्थकशब्द युग्मशब्द</li>
-        <li>वर्तनी (शब्द एंववाक्य शुद्धिकरण )</li>
-        <li>वर्ण</li>
-        <li>स्वर</li>
-        <li>व्यंजन</li>
-        <li>विदेशी ध्वनियाँ</li>
-        <li>संज्ञा</li>
-        <li>सर्वनाम</li>
-        <li>विशेषण</li>
-        <li>किया किया विशेषण</li>
-        <li>समुच्चय बोधक</li>
-        <li>विस्मय बोधक</li>
-        <li>वचन</li>
-        <li>लिंग</li>
-        <li>कारक</li>
-        <li>काल</li>
-        <li>तदभव तत्सम शब्द</li>
+        <li data-topic="शब्द">शब्द</li>
+        <li data-topic="अलंकार">अलंकार</li>
+        <li data-topic="विकारीशब्द">विकारीशब्द</li>
+        <li data-topic="वाक्य">वाक्य</li>
+        <li data-topic="अविकारीशब्द">अविकारीशब्द</li>
+        <li data-topic="पद">पद</li>
+        <li data-topic="पदबंध">पदबंध</li>
+        <li data-topic="मुहावरें">मुहावरें</li>
+        <li data-topic="लोकोक्तियां">लोकोक्तियां</li>
+        <li data-topic="संधि">संधि</li>
+        <li data-topic="उपसर्ग">उपसर्ग</li>
+        <li data-topic="प्रत्यय">प्रत्यय</li>
+        <li data-topic="समास">समास</li>
+        <li data-topic="पर्यायवाची">पर्यायवाची</li>
+        <li data-topic="विलोम व अनेकार्थीशब्द">विलोम व अनेकार्थीशब्द</li>
+        <li data-topic="अयोगवाह">अयोगवाह</li>
+        <li data-topic="वाक्य शोधन">वाक्य शोधन</li>
+        <li data-topic="निपात ( अवधारक)">निपात ( अवधारक)</li>
+        <li data-topic="विरामचिन्ह">विरामचिन्ह</li>
+        <li data-topic="संबंधबोधक">संबंधबोधक</li>
+        <li data-topic="अनेकशब्दों के लिए एक शब्द">अनेकशब्दों के लिए एक शब्द</li>
+        <li data-topic="एकार्थकशब्द युग्मशब्द">एकार्थकशब्द युग्मशब्द</li>
+        <li data-topic="वर्तनी (शब्द एंववाक्य शुद्धिकरण )">वर्तनी (शब्द एंववाक्य शुद्धिकरण )</li>
+        <li data-topic="वर्ण">वर्ण</li>
+        <li data-topic="स्वर">स्वर</li>
+        <li data-topic="व्यंजन">व्यंजन</li>
+        <li data-topic="विदेशी ध्वनियाँ">विदेशी ध्वनियाँ</li>
+        <li data-topic="संज्ञा">संज्ञा</li>
+        <li data-topic="सर्वनाम">सर्वनाम</li>
+        <li data-topic="विशेषण">विशेषण</li>
+        <li data-topic="क्रिया विशेषण">क्रिया विशेषण</li>
+        <li data-topic="समुच्चय बोधक">समुच्चय बोधक</li>
+        <li data-topic="विस्मय बोधक">विस्मय बोधक</li>
+        <li data-topic="वचन">वचन</li>
+        <li data-topic="लिंग">लिंग</li>
+        <li data-topic="कारक">कारक</li>
+        <li data-topic="काल">काल</li>
+        <li data-topic="तदभव तत्सम शब्द">तदभव तत्सम शब्द</li>
     </ul>`,
   "General Knowledge of Haryana": `General awareness which includes:
     <ul>
-        <li>History</li>
-        <li>Literature</li>
-        <li>Geography</li>
-        <li>Economy</li>
-        <li>Civics</li>
-        <li>Polity</li>
-        <li>Environment</li>
-        <li>Art</li>
-        <li>Culture</li>
-        <li>Customs</li>
-        <li>Norms</li>
-        <li>Society</li>
-        <li>Current Affairs</li>
-        <li>Events etc. of Haryana</li>
+        <li data-topic="History of Haryana">History</li>
+        <li data-topic="Literature of Haryana">Literature</li>
+        <li data-topic="Geography of Haryana">Geography</li>
+        <li data-topic="Economy of Haryana">Economy</li>
+        <li data-topic="Civics of Haryana">Civics</li>
+        <li data-topic="Polity of Haryana">Polity</li>
+        <li data-topic="Environment of Haryana">Environment</li>
+        <li data-topic="Art of Haryana">Art</li>
+        <li data-topic="Culture of Haryana">Culture</li>
+        <li data-topic="Customs & Norms of Haryana">Customs, Norms</li>
+        <li data-topic="Society of Haryana">Society</li>
+        <li data-topic="Current Affairs of Haryana">Current Affairs</li>
+        <li data-topic="Events of Haryana">Events etc. of Haryana</li>
     </ul>`,
 };
 
@@ -219,6 +218,15 @@ function setNotesUIState(state) {
   // Reset button text
   checkTopicButton.textContent = "Check Topic / Generate Notes";
 
+  // Manage loading indicator visibility
+  if (state === "loading") {
+    notesLoadingIndicator.style.display = "block";
+    notesGenerationStatus.classList.remove("hidden");
+  } else {
+    notesLoadingIndicator.style.display = "none";
+    notesGenerationStatus.classList.add("hidden");
+  }
+
   switch (state) {
     case "initial":
       notesTopicInput.closest("div").style.display = "block"; // Show initial input
@@ -226,8 +234,6 @@ function setNotesUIState(state) {
       checkTopicButton.disabled = false;
       break;
     case "loading":
-      notesLoadingIndicator.style.display = "block";
-      notesGenerationStatus.classList.remove("hidden");
       checkTopicButton.disabled = true;
       notesTopicInput.disabled = true;
       notesLanguageSelect.disabled = true;
@@ -258,11 +264,6 @@ function setNotesUIState(state) {
     default:
       setNotesUIState("initial"); // Fallback to initial
       break;
-  }
-  // Always hide loading indicators unless explicitly in 'loading' state
-  if (state !== "loading") {
-    notesLoadingIndicator.style.display = "none";
-    notesGenerationStatus.classList.add("hidden");
   }
 }
 
@@ -306,14 +307,40 @@ if (subjectSelect) {
         syllabusTitle.textContent = `${currentSubject} Syllabus`;
         syllabusText.innerHTML = syllabusContent;
         syllabusDisplay.classList.remove("hidden");
+        addSyllabusTopicClickHandlers(); // Now called after content is loaded
       } else {
         syllabusTitle.textContent = "";
         syllabusText.innerHTML = "Syllabus not available for this subject.";
       }
-      notesTopicInput.value = currentSubject; // Pre-fill notes topic with subject
+      notesTopicInput.value = ""; // Clear topic input on new subject selection
     }
     setNotesUIState("initial"); // Reset UI to initial state
   });
+}
+
+// Function to make syllabus topics clickable
+function addSyllabusTopicClickHandlers() {
+  // Select all <li> elements that have the data-topic attribute within syllabus-content
+  const syllabusListItems = document.querySelectorAll(".syllabus-content li[data-topic]");
+  syllabusListItems.forEach((item) => {
+    item.classList.add("clickable-syllabus-topic"); // Add a class for styling
+    // Remove existing listener to prevent duplicates before adding new one
+    item.removeEventListener("click", handleSyllabusTopicClick);
+    item.addEventListener("click", handleSyllabusTopicClick);
+  });
+}
+
+function handleSyllabusTopicClick(event) {
+  const topicText = event.target.getAttribute("data-topic");
+  if (topicText) {
+    notesTopicInput.value = topicText;
+    showMessageBox(
+      "Info",
+      `Topic "${topicText}" pre-filled in input. Click 'Check Topic / Generate Notes' to proceed.`
+    );
+    // Optionally, auto-trigger checkTopicButton if desired for seamless flow
+    // checkTopicButton.click();
+  }
 }
 
 // Check Topic / Generate Notes Button Handler
@@ -338,18 +365,22 @@ if (checkTopicButton) {
     notesGenerationStatus.textContent = "Analyzing topic complexity...";
 
     // Prompt to check if topic needs breaking down
-    const breakdownPrompt = `Does the topic "${currentMainTopic}" (for HSSC Group C competitive exam in ${currentSubject} ${currentLanguage} language) need to be broken down into distinct sub-topics for comprehensive learning?
-        If YES, provide a JSON array of 3-7 key sub-topics/parts that cover the main topic comprehensively. Example: ["Part 1 Name", "Part 2 Name", "Part 3 Name"].
-        If NO, respond with 'NO_BREAKDOWN_NEEDED'.`;
+    const breakdownPrompt = `Does the topic "${currentMainTopic}" (for HSSC Group C competitive exam in ${currentSubject} ${currentLanguage} language) need to be broken down into distinct, logical sub-topics for comprehensive learning?
+        If YES, provide a JSON array of 3-7 key sub-topics/parts that cover the main topic comprehensively. Each sub-topic name should be concise and clearly identify the part. Example: ["Part 1 Name", "Part 2 Name", "Part 3 Name"].
+        If NO, respond with 'NO_BREAKDOWN_NEEDED' on a single line.`;
 
     try {
-      const result = await generateContentFromAI(breakdownPrompt, apiKey, "application/json");
+      const result = await generateContentFromAI(
+        breakdownPrompt,
+        apiKey,
+        "application/json"
+      );
 
       const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
       if (responseText) {
+        // Check for 'NO_BREAKDOWN_NEEDED' first, case-insensitively and trim.
         if (responseText.trim().toUpperCase() === "NO_BREAKDOWN_NEEDED") {
-          // Generate full notes directly
           notesGenerationStatus.textContent = "Topic is concise. Generating full notes...";
           await generateAndDisplayNotes(
             currentMainTopic,
@@ -379,8 +410,9 @@ if (checkTopicButton) {
                   "shadow-sm",
                   "hover:bg-blue-100",
                   "transition",
-                  "duration-200"
-                );
+                  "duration-200",
+                  "topic-part-button"
+                ); // Add custom class
                 partButton.addEventListener("click", async () => {
                   notesGenerationStatus.textContent = `Generating notes for "${part}"...`;
                   setNotesUIState("loading");
@@ -395,7 +427,7 @@ if (checkTopicButton) {
                 });
                 topicPartsContainer.appendChild(partButton);
               });
-              partsPromptText.textContent = `The topic "${currentMainTopic}" can be broken down. Select a part or get full notes:`;
+              partsPromptText.textContent = `The topic "${currentMainTopic}" can be broken down. Select a part to learn more, or get full notes:`;
               setNotesUIState("parts_available");
             } else {
               // If JSON is invalid or empty array, generate full notes as fallback
@@ -526,7 +558,7 @@ async function generateAndDisplayNotes(
 
     if (generatedNotes) {
       generatedNotesTitle.textContent = `Notes on: ${topicToGenerate}`;
-      generatedNotesText.innerHTML = formatNotes(generatedNotes);
+      generatedNotesText.innerHTML = marked.parse(generatedNotes);
       generatedNotesDisplay.classList.remove("hidden");
     } else {
       let errorMessage = `Failed to generate notes for "${topicToGenerate}". No valid text content received from AI.`;
@@ -538,7 +570,10 @@ async function generateAndDisplayNotes(
         errorMessage += ` Prompt was blocked: ${result.promptFeedback.blockReason}.`;
       }
       showMessageBox("Error", errorMessage + " Please try a different topic or adjust settings.");
-      console.error("Gemini API Full Response (Notes Gen):", JSON.stringify(result, null, 2));
+      console.error(
+        "Gemini API Full Response (Notes Gen):",
+        JSON.stringify(result, null, 2)
+      );
       setNotesUIState("initial"); // Go back to initial on notes gen error
     }
   } catch (error) {
@@ -551,69 +586,8 @@ async function generateAndDisplayNotes(
   }
 }
 
-/**
- * Formats plain text notes from AI into more readable HTML.
- * Handles headings, bold text, and lists generated with Markdown.
- * @param {string} text - The plain text generated by the AI.
- * @returns {string} HTML formatted text.
- */
-function formatNotes(text) {
-  let formattedText = text;
-
-  // Convert markdown bold and italic
-  formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-  formattedText = formattedText.replace(/\*(.*?)\*/g, "<em>$1</em>");
-
-  // Convert markdown headers to appropriate HTML tags and add class for margin
-  formattedText = formattedText.replace(/^### (.*)$/gm, '<h4 class="notes-subheading">$1</h4>'); // H3 to H4
-  formattedText = formattedText.replace(/^## (.*)$/gm, '<h3 class="notes-heading">$1</h3>'); // H2 to H3
-
-  // Handle bullet points and ensure proper paragraph wrapping
-  const lines = formattedText.split("\n");
-  let htmlOutput = [];
-  let inList = false;
-
-  lines.forEach((line) => {
-    const trimmedLine = line.trim();
-
-    // Check for list items (Markdown: - Item or * Item)
-    if (trimmedLine.match(/^[*-]\s/)) {
-      if (!inList) {
-        htmlOutput.push("<ul>");
-        inList = true;
-      }
-      htmlOutput.push(`<li>${trimmedLine.substring(trimmedLine.indexOf(" ") + 1)}</li>`);
-    } else {
-      // If we were in a list and the current line is not a list item, close the list
-      if (inList) {
-        htmlOutput.push("</ul>");
-        inList = false;
-      }
-      // Add paragraphs for non-empty lines that aren't already wrapped in block-level tags
-      // or starting with Markdown heading indicators or our custom heading classes
-      const startsWithHtmlTagOrCustomHeading = trimmedLine.match(
-        /^<h[1-6] class="notes-(heading|subheading)">|<p>|<ul|<li|<strong|<em/i
-      );
-      if (
-        trimmedLine !== "" &&
-        !startsWithHtmlTagOrCustomHeading &&
-        !trimmedLine.match(/^[#*-]\s/)
-      ) {
-        htmlOutput.push(`<p>${trimmedLine}</p>`);
-      } else if (trimmedLine !== "") {
-        htmlOutput.push(trimmedLine); // Keep lines that are already HTML or empty
-      }
-      // Skip empty lines to avoid empty <p> tags
-    }
-  });
-
-  // Close any open list at the end of the text
-  if (inList) {
-    htmlOutput.push("</ul>");
-  }
-
-  return htmlOutput.join("\n");
-}
+// --- Marked.js is used, so custom formatNotes is no longer needed ---
+// function formatNotes(text) { ... }
 
 // Event Listeners for new navigation buttons
 if (generateFullNotesButton) {
@@ -638,7 +612,7 @@ if (backToPartsButton) {
     } else {
       setNotesUIState("initial"); // Fallback if no parts somehow
     }
-    // Re-render parts if they were cleared
+    // Re-render parts if they were cleared (important when coming back from generated notes)
     if (topicPartsContainer.innerHTML === "" && currentParts.length > 0) {
       currentParts.forEach((part) => {
         const partButton = document.createElement("button");
@@ -653,7 +627,8 @@ if (backToPartsButton) {
           "shadow-sm",
           "hover:bg-blue-100",
           "transition",
-          "duration-200"
+          "duration-200",
+          "topic-part-button"
         );
         partButton.addEventListener("click", async () => {
           notesGenerationStatus.textContent = `Generating notes for "${part}"...`;
@@ -686,16 +661,17 @@ if (startNewNotesButton) {
   startNewNotesButton.addEventListener("click", () => {
     // Clear all previous inputs and state
     notesTopicInput.value = "";
-    notesLanguageSelect.value = "Hindi";
-    notesLengthSelect.value = "dynamic";
+    // Reset language and length to defaults
+    notesLanguageSelect.value = "English"; // Changed default to English
+    notesLengthSelect.value = "standard"; // Changed default to standard
     subjectSelect.value = "none"; // Reset subject select
     syllabusDisplay.classList.add("hidden"); // Hide syllabus display
     syllabusTitle.textContent = "";
     syllabusText.innerHTML = "";
 
     currentMainTopic = "";
-    currentLanguage = "Hindi";
-    currentLength = "dynamic";
+    currentLanguage = "English"; // Changed default to English
+    currentLength = "standard"; // Changed default to standard
     currentSubject = "none";
     currentParts = [];
     topicPartsContainer.innerHTML = ""; // Clear parts container
