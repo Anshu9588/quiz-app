@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Quiz App</title>
+    <title> Quiz App</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -130,12 +130,22 @@
 </head>
 <body>
     <div class="quiz-container">
-        <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Quiz App</h1>
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-4"> Quiz App</h1>
 
-        <!-- JSON Input Section -->
+        <!-- JSON Input Section (Combined for Paste and File Upload) -->
         <div id="json-input-section" class="flex flex-col items-center gap-4">
-            <p class="text-lg text-gray-700">Paste your Quiz JSON below:</p>
+            <p class="text-lg text-gray-700">Paste your Quiz JSON below OR Upload a file:</p>
+
             <textarea id="json-paste-area" placeholder='[{"question": "...", "options": ["...", "..."], "answer": "...", "explanation": "..."}, ...]' class="w-full"></textarea>
+
+            <div class="flex items-center gap-4 w-full justify-center">
+                <label for="json-upload" class="cursor-pointer bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-sm transition duration-300 ease-in-out">
+                    Upload JSON File
+                </label>
+                <input type="file" id="json-upload" accept=".json" class="hidden">
+                <p id="file-status" class="text-sm text-gray-600">No file chosen</p>
+            </div>
+
             <button id="load-quiz-button" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out">Load Quiz</button>
         </div>
 
@@ -188,6 +198,8 @@
         const quizResultSection = document.getElementById('quiz-result-section');
         const jsonPasteArea = document.getElementById('json-paste-area');
         const loadQuizButton = document.getElementById('load-quiz-button');
+        const jsonUploadInput = document.getElementById('json-upload'); // Re-added
+        const fileStatusParagraph = document.getElementById('file-status'); // Re-added
         const questionText = document.getElementById('question-text');
         const optionsContainer = document.getElementById('options-container');
         const currentQuestionNumberSpan = document.getElementById('current-question-number');
@@ -195,7 +207,7 @@
         const feedbackSection = document.getElementById('feedback-section');
         const explanationBox = document.getElementById('explanation-box');
         const explanationText = document.getElementById('explanation-text');
-        const prevQuestionButton = document.getElementById('prev-question-button'); // New button
+        const prevQuestionButton = document.getElementById('prev-question-button');
         const nextQuestionButton = document.getElementById('next-question-button');
         const finalScoreSpan = document.getElementById('final-score');
         const totalQuestionsResultSpan = document.getElementById('total-questions-result');
@@ -222,18 +234,35 @@
             messageBox.style.display = 'none';
         });
 
-        // Event listener for Load Quiz button
+        // Event listener for JSON file upload
+        jsonUploadInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                fileStatusParagraph.textContent = `File chosen: ${file.name}`;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    // Place the file content into the paste area
+                    jsonPasteArea.value = e.target.result;
+                };
+                reader.readAsText(file);
+            } else {
+                fileStatusParagraph.textContent = "No file chosen";
+                jsonPasteArea.value = ''; // Clear paste area if no file selected
+            }
+        });
+
+        // Event listener for Load Quiz button (handles both paste and file content)
         loadQuizButton.addEventListener('click', () => {
             const jsonString = jsonPasteArea.value.trim();
             if (!jsonString) {
-                showMessageBox("Info", "Please paste your quiz JSON into the text area.");
+                showMessageBox("Info", "Please paste your quiz JSON or upload a file.");
                 return;
             }
 
             try {
                 const parsedData = JSON.parse(jsonString);
                 if (!Array.isArray(parsedData) || parsedData.length === 0) {
-                    showMessageBox("Error", "Invalid JSON format. Please paste an array of question objects.");
+                    showMessageBox("Error", "Invalid JSON format. Please provide an array of question objects.");
                     quizData = []; // Clear data if invalid
                 } else {
                     // Validate each question object structure and initialize userAnswer
@@ -258,7 +287,7 @@
                     }
                 }
             } catch (error) {
-                showMessageBox("Error", "Failed to parse JSON. Please ensure the pasted content is valid JSON.");
+                showMessageBox("Error", "Failed to parse JSON. Please ensure the content is valid JSON.");
                 quizData = []; // Clear data if parsing fails
             }
         });
@@ -406,6 +435,8 @@
             quizResultSection.classList.add('hidden');
             jsonInputSection.classList.remove('hidden'); // Show JSON input section
             jsonPasteArea.value = ''; // Clear text area
+            jsonUploadInput.value = ''; // Clear file input
+            fileStatusParagraph.textContent = "No file chosen"; // Reset file status
             quizData = [];
             currentQuestionIndex = 0;
             score = 0;
