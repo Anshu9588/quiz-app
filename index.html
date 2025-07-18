@@ -392,9 +392,9 @@
             try {
                 const loadedObject = JSON.parse(jsonString);
                 let loadedQuizData = [];
-                let loadedTopic = 'Loaded Quiz';
-                let loadedLanguage = 'English';
-                let loadedDifficulty = 'HSSC exam level';
+                let loadedTopic = 'Loaded Quiz'; // Default if not found
+                let loadedLanguage = 'English'; // Default
+                let loadedDifficulty = 'HSSC exam level'; // Default
                 let loadedNumQuestions = 0;
 
                 // Check if the loaded JSON is an object with metadata + questions, or just an array of questions
@@ -455,7 +455,7 @@
                 let prompt = `Generate ${numQuestions} multiple-choice quiz questions in ${language} about "${topic}". Each question should have 4 options, one correct answer, and an explanation. The questions should be at a "${difficulty}" level. Provide the output as a JSON array of objects. Each object must have 'question' (string), 'options' (array of strings), 'answer' (string, matching one of the options), and 'explanation' (string). Example format: [{"question": "...", "options": ["...", "..."], "answer": "...", "explanation": "..."}, ...]`;
 
                 if (incorrectQuestionTexts.length > 0) {
-                    const incorrectTopicsSummary = incorrectQuestionTexts.map(q => `"${q.substring(0, 50)}..."`).join(', ');
+                    const incorrectTopicsSummary = incorrectQuestionTexts.map(q => `"${q.substring(0, Math.min(q.length, 50))}..."`).join(', ');
                     prompt = `Generate ${numQuestions} multiple-choice quiz questions in ${language} at a "${difficulty}" level. Focus on concepts related to the following questions which were answered incorrectly: ${incorrectTopicsSummary}. Each question should have 4 options, one correct answer, and an explanation. Provide the output as a JSON array of objects. Each object must have 'question' (string), 'options' (array of strings), 'answer' (string, matching one of the options), and 'explanation' (string).`;
                 }
 
@@ -705,15 +705,25 @@
             totalQuestionsResultSpan.textContent = quizData.length;
 
             // Set default filename for history download
-            const defaultFilename = currentQuizTopic ? `${currentQuizTopic.replace(/\s+/g, '_').toLowerCase()}_quiz_history.json` : 'quiz_history.json';
+            const defaultFilename = currentQuizTopic && currentQuizTopic !== 'Loaded Quiz' ? `${currentQuizTopic.replace(/\s+/g, '_').toLowerCase()}_quiz_history.json` : 'quiz_history.json';
             historyFilenameInput.value = defaultFilename;
 
-            // Show/hide generate practice questions button
-            // Only show if there are mistakes AND a valid topic to generate from
-            if (incorrectAnswersCount > 0 && currentQuizTopic && currentQuizTopic !== 'Loaded Quiz') {
+            // Determine if practice button should be shown and what text it should have
+            // The button should always be visible if quizData exists, offering either targeted or general practice.
+            if (quizData.length > 0) {
                 generatePracticeButton.classList.remove('hidden');
+                if (incorrectAnswersCount > 0 && currentQuizTopic && currentQuizTopic !== 'Loaded Quiz') {
+                    // Targeted practice if mistakes and a specific topic is known
+                    generatePracticeButton.textContent = 'Generate Practice Questions (Based on Mistakes)';
+                } else if (currentQuizTopic && currentQuizTopic !== 'Loaded Quiz') {
+                    // General practice if no mistakes but a specific topic is known
+                    generatePracticeButton.textContent = 'Generate More Questions on This Topic';
+                } else {
+                    // General practice if topic is 'Loaded Quiz' or unknown (from manual paste/upload without topic metadata)
+                    generatePracticeButton.textContent = 'Generate New Questions (Requires Topic Input)';
+                }
             } else {
-                generatePracticeButton.classList.add('hidden');
+                generatePracticeButton.classList.add('hidden'); // Hide if no quiz data
             }
         }
 
@@ -762,26 +772,33 @@
                 return;
             }
 
-            if (!currentQuizTopic || currentQuizTopic === 'Loaded Quiz') {
-                showMessageBox("Info", "Cannot generate practice questions without a specific quiz topic. Please generate a new quiz first or ensure the loaded history has a topic.");
-                return;
+            let topicToGenerate = currentQuizTopic;
+            // If the current quiz topic is generic ('Loaded Quiz') or empty,
+            // we should try to use the topic from the input field for general generation.
+            if (!topicToGenerate || topicToGenerate === 'Loaded Quiz') {
+                topicToGenerate = topicInput.value.trim(); // Get topic from input field
+                if (!topicToGenerate) {
+                    showMessageBox("Info", "Please enter a topic in the 'Generate Quiz by Topic' section to generate new questions.");
+                    return;
+                }
             }
 
-            // Get questions that were answered incorrectly
+            const language = languageSelect.value; // Use current language setting
+            const numQuestions = parseInt(numQuestionsInput.value, 10); // Use current num questions setting
+            const difficulty = difficultySelect.value; // Use current difficulty setting
+
             const incorrectQuestions = quizData.filter(q => q.userAnswer !== q.answer);
             const incorrectQuestionTexts = incorrectQuestions.map(q => q.question);
 
-            if (incorrectQuestionTexts.length === 0) {
-                showMessageBox("Info", "Great job! You answered all questions correctly. No specific practice questions needed based on mistakes.");
-                return;
+            if (incorrectQuestionTexts.length > 0 && currentQuizTopic && currentQuizTopic !== 'Loaded Quiz') {
+                // Targeted practice if mistakes and a specific topic is known
+                showMessageBox("Generating...", `Generating ${numQuestions} practice questions on "${topicToGenerate}" focusing on areas you found challenging...`);
+                await generateQuiz(topicToGenerate, language, numQuestions, difficulty, apiKey, incorrectQuestionTexts);
+            } else {
+                // General practice if no mistakes OR topic is generic/unknown
+                showMessageBox("Generating...", `Generating ${numQuestions} new questions on "${topicToGenerate}"...`);
+                await generateQuiz(topicToGenerate, language, numQuestions, difficulty, apiKey);
             }
-
-            const language = currentQuizLanguage;
-            const numQuestions = currentQuizNumQuestions; // Use the same number as last time
-            const difficulty = currentQuizDifficulty; // Use the same difficulty as last time
-
-            showMessageBox("Generating...", `Generating ${numQuestions} practice questions on "${currentQuizTopic}" focusing on areas you found challenging...`);
-            await generateQuiz(currentQuizTopic, language, numQuestions, difficulty, apiKey, incorrectQuestionTexts);
             
             quizResultSection.classList.add('hidden');
             quizDisplaySection.classList.remove('hidden');
