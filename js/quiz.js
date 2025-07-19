@@ -208,7 +208,48 @@ async function generateQuiz(
 
   try {
     let chatHistory = [];
-    let prompt = `Generate ${numQuestions} multiple-choice quiz questions in ${language} about "${topic}". Each question should have 4 options, one correct answer, and an explanation. The questions should be at a "${difficulty}" level. Provide the output as a JSON array of objects. Each object must have 'question' (string), 'options' (array of strings), 'answer' (string, matching one of the options), and 'explanation' (string). Example format: [{"question": "...", "options": ["...", "..."], "answer": "...", "explanation": "..."}, ...]`;
+    let prompt = `Generate ${numQuestions} unique multiple-choice questions in ${language} about the topic "${topic}". All questions should be at a "${difficulty}" level, suitable for HSSC Group C competitive exams.
+
+**Goals:**
+
+1. **Subtopic & Concept Diversity:**
+   - Cover a variety of subtopics and dimensions of "${topic}" relevant to its subject.
+   - Include both **core concepts** and **less-frequently-tested but important facts**.
+   - If "${topic}" is theoretical (e.g., grammar, polity, science), include definition, classification, rules, exceptions, examples.
+   - If "${topic}" is numerical (e.g., math, reasoning), include formula-based, application, and error-prone trick questions.
+
+2. **Avoid Repetition:**
+   - Do NOT repeat question structure or content within the same set.
+   - Go beyond standard textbook examples or surface-level facts.
+
+3. **Varied Question Styles:**
+   - Use a mix of:
+     - Concept-based
+     - Application/problem-solving
+     - Exception-type
+     - "Which of the following is true/false?"
+     - Match the following
+     - Cause-effect or chronology
+   - Avoid predictable patterns like always starting with “What is…” or “Who…”
+
+4. **High-Utility Explanations:**
+   - For each question:
+     - **Explain why the answer is correct** using concise logic, formula, rule, or fact.
+     - **Briefly address why the other options are incorrect** (if possible).
+     - Include **exam-relevant keywords**, short tricks, formulas, historical years, grammatical rules, etc.
+   - Keep tone **exam-focused**, not conversational.
+
+**Output Format (JSON only):**
+[
+  {
+    "question": "Your question text here?",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "answer": "Correct Option Text",
+    "explanation": "Concise explanation with key facts, formula, logic, or comparison."
+  },
+  ...
+]
+`;
 
     if (incorrectQuestionTexts.length > 0) {
       const incorrectTopicsSummary = incorrectQuestionTexts
