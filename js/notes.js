@@ -370,11 +370,7 @@ if (checkTopicButton) {
         If NO, respond with 'NO_BREAKDOWN_NEEDED' on a single line.`;
 
     try {
-      const result = await generateContentFromAI(
-        breakdownPrompt,
-        apiKey,
-        "application/json"
-      );
+      const result = await generateContentFromAI(breakdownPrompt, apiKey, "application/json");
 
       const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
@@ -521,31 +517,59 @@ async function generateAndDisplayNotes(
 
   let prompt = `Generate ${lengthDescriptor} ${wordCountRange} in ${language} on the topic "${topicToGenerate}".
 
-    **Core Mandate:** The primary goal is to create **highly effective, exam-ready study notes** for **HSSC Group C competitive examinations**. Every piece of information must be **high-yield, accurate, and directly relevant** to typical exam questions.
+**Purpose:** Create **comprehensive, exam-ready study notes** for **HSSC Group C competitive exams**. All content must be **fact-dense, relevant, and aligned with common exam patterns**.
 
-    **Instructions for AI:**
-    1.  **Strict Purpose & Relevance:** Focus exclusively on facts, figures, and concepts that are crucial for a competitive exam perspective. Absolutely no tangential information, elaborate narratives, or conversational filler.
-    2.  **Maximal Conciseness & Precision:** Be exceptionally direct. Prioritize bullet points and short, impactful sentences. Avoid any form of verbosity. Think "flashcard" density for each piece of information.
-    3.  **Guaranteed Completeness & Optimal Depth:**
-        ${
-          lengthOption === "dynamic"
-            ? `For this "dynamic" length request, determine the most suitable length to comprehensively cover all *critical* aspects, major sub-points, and high-yield information of "${topicToGenerate}" without sacrificing conciseness. Ensure no fundamental, high-importance details are missed.`
-            : `Within the specified length, ensure all *critical* aspects and major sub-points of "${topicToGenerate}" are covered. Think "high-yield" information.`
-        }
-    4.  **Optimal Structure & Readability:**
-        * Use **clear, concise main headings** (e.g., "## Introduction", "## Key Characteristics", "## Major Events", "## Impact") that act as mini-summaries.
-        * Use **subheadings** (e.g., "### Sub-Topic A", "### Important Figures") for deeper dives.
-        * **Crucially, ensure a blank line after every heading (both main and subheadings) for visual separation.**
-        * **Bold all important terms, names, dates, and key facts** without exception.
-        * Utilize bullet points (\`- \` or \`* \`) for lists of facts, characteristics, or sequential steps.
-        * Each bullet point should be a concise statement.
-    5.  **Unquestionable Accuracy:** All facts, dates, and information provided must be historically and factually impeccable.
-    6.  **Syllabus Context Integration:** ${syllabusContext}
-    7.  **Output Format:** Deliver the content as plain text. Adhere **100% strictly** to Markdown for:
-        * Headings (using \`##\` for main, \`###\` for subheadings).
-        * Bold text (using \`**text**\`).
-        * Bullet points (using \`- \` or \`* \` followed by a space).
-        * **Ensure a blank line after each heading.**`;
+**Instructions for AI:**
+
+1. **Uncompromising Relevance & Focus:**
+   - Include only information with direct value for objective-type or descriptive questions.
+   - Cover **static**, **dynamic**, **historical**, and **contemporary** dimensions if relevant.
+   - Avoid any narrative filler, generic overviews, or commentary.
+
+2. **Maximum Depth With Optimal Brevity:**
+   - Combine **full topical coverage** with **high precision**.
+   - Each fact should stand alone as a potential MCQ or short answer point.
+   - Treat content like a **rank-booster capsule** — brief yet exhaustive.
+
+3. **Topic Coverage Guidelines:**
+   ${
+     lengthOption === "dynamic"
+       ? `For this "dynamic" request, determine the **ideal depth and length** to cover all essential aspects of "${topicToGenerate}" — including definitions, origins, causes, effects, examples, classifications, related terms, historical context, and any exam-relevant frameworks.`
+       : `Cover every *high-yield* area of "${topicToGenerate}" within the word limit — include definitions, important facts, frameworks, and case-related information.`
+   }
+
+4. **Structure for Fast Learning:**
+   - Use **clear and informative headings** (e.g., "## Definition", "## Causes", "## Effects", "## Key Features", "## Historical Background", "## Contemporary Relevance", etc.).
+   - Add subheadings (e.g., "### Constitutional Articles", "### Important Committees", etc.) for deeper structure.
+   - **Ensure a blank line after every heading.**
+   - Highlight all important data using **bold formatting**: **dates**, **names**, **articles**, **acts**, **locations**, etc.
+
+5. **Formatting Rules:**
+   - Use Markdown only:
+     - \`##\` for main headings
+     - \`###\` for subheadings
+     -  **
+      (bold **
+         for key points
+     - ) -
+     or *
+       for bullet points
+   - Bullet points must be short, impactful, and exam-relevant.
+   - Ensure **no large paragraph blocks** — prefer point format.
+
+6. **Quality Control:**
+   - Every fact must be **accurate and verifiable**.
+   - Avoid controversial or unverified claims.
+   - Include **examples, diagrams (if possible in text), and classification lists** where helpful.
+
+7. **Syllabus Mapping:** Ensure alignment with the following syllabus focus areas — ${syllabusContext}
+
+8. **Output Format:** 
+   - Deliver in **Markdown** with strict formatting.
+   - Plain text only. No HTML, links, or additional explanations.
+
+*Remember: The goal is to simulate the quality and depth of premium coaching notes, while keeping readability and recall efficiency at peak level.*
+`;
 
   if (!prompt.trim()) {
     console.warn("Generated notes prompt is empty. Using a default prompt.");
@@ -570,10 +594,7 @@ async function generateAndDisplayNotes(
         errorMessage += ` Prompt was blocked: ${result.promptFeedback.blockReason}.`;
       }
       showMessageBox("Error", errorMessage + " Please try a different topic or adjust settings.");
-      console.error(
-        "Gemini API Full Response (Notes Gen):",
-        JSON.stringify(result, null, 2)
-      );
+      console.error("Gemini API Full Response (Notes Gen):", JSON.stringify(result, null, 2));
       setNotesUIState("initial"); // Go back to initial on notes gen error
     }
   } catch (error) {
