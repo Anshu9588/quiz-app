@@ -1,7 +1,5 @@
-// js/quiz.js
-
 // Global variables for quiz state
-let quizData = []; // Stores all quiz questions, options, answers, explanations, and userAnswer
+let quizData = []; // Stores all quiz questions, options, answers, explanations, and userAnswer, now also 'moreInfo'
 let currentQuestionIndex = 0;
 let quizStarted = false; // Flag to indicate if a quiz is active
 let currentQuizTopic = ""; // Stores the topic of the generated quiz for filename suggestion
@@ -41,6 +39,52 @@ const downloadHistoryButton = document.getElementById("download-history-button")
 const generatePracticeButton = document.getElementById("generate-practice-button");
 const restartQuizButton = document.getElementById("restart-quiz-button");
 
+// New DOM elements for "Know More" functionality
+const knowMoreButton = document.createElement("button");
+knowMoreButton.id = "know-more-button";
+knowMoreButton.classList.add(
+  "bg-blue-400",
+  "hover:bg-blue-500",
+  "text-white",
+  "font-semibold",
+  "py-2",
+  "px-4",
+  "rounded-lg",
+  "shadow-md",
+  "transition",
+  "duration-300",
+  "ease-in-out",
+  "mt-4",
+  "hidden" // Initially hidden
+);
+knowMoreButton.textContent = "Know More";
+
+const moreInfoBox = document.createElement("div");
+moreInfoBox.id = "more-info-box";
+moreInfoBox.classList.add(
+  "explanation",
+  "hidden",
+  "mt-4",
+  "p-4",
+  "bg-indigo-50",
+  "rounded-lg",
+  "text-gray-700"
+); // Added text-gray-700 for better contrast
+const moreInfoText = document.createElement("div"); // Changed to div to hold HTML
+moreInfoText.id = "more-info-text";
+moreInfoBox.appendChild(moreInfoText);
+
+// Append the "Know More" button and more info box to the quiz display section
+// Find a suitable parent element. For example, just after the options container.
+// Ensure these are appended only once.
+if (quizDisplaySection && !document.getElementById("know-more-button")) {
+  const navigationContainer = document.getElementById("quiz-navigation"); // Or any other suitable existing container
+  if (navigationContainer) {
+    navigationContainer.before(moreInfoBox); // Place before navigation buttons
+    navigationContainer.before(knowMoreButton); // Place before navigation buttons
+  }
+}
+
 /**
  * Validates the structure of the parsed quiz data.
  * Ensures each question has 'question', 'options' (array of strings), 'answer' (string),
@@ -60,7 +104,10 @@ function validateQuizData(data) {
       q.options.every((o) => typeof o === "string") &&
       typeof q.answer === "string" &&
       q.options.includes(q.answer) && // Ensure answer is one of the options
-      (typeof q.explanation === "string" || q.explanation === undefined || q.explanation === null)
+      (typeof q.explanation === "string" ||
+        q.explanation === undefined ||
+        q.explanation === null) &&
+      (typeof q.moreInfo === "string" || q.moreInfo === undefined || q.moreInfo === null) // Validate new 'moreInfo' property
   );
 }
 
@@ -74,10 +121,11 @@ function validateQuizData(data) {
  * @param {number} numQuestions - The number of questions in the quiz.
  */
 function startQuiz(data, topic, language, difficulty, numQuestions) {
-  // Ensure each question has a userAnswer property, initialized to null if not present
+  // Ensure each question has a userAnswer and moreInfo property, initialized to null if not present
   quizData = data.map((q) => ({
     ...q,
     userAnswer: q.userAnswer !== undefined ? q.userAnswer : null,
+    moreInfo: q.moreInfo !== undefined ? q.moreInfo : null, // Initialize moreInfo
   }));
   quizStarted = true;
   if (inputSelectionSection) inputSelectionSection.classList.add("hidden");
@@ -161,7 +209,7 @@ if (loadPastedQuizButton) {
       } else {
         showMessageBox(
           "Error",
-          "Invalid quiz data structure. Please ensure it follows the correct format (question, options, answer, explanation)."
+          "Invalid quiz data structure. Please ensure it follows the correct format (question, options, answer, explanation, and optionally moreInfo)."
         );
         quizData = []; // Clear data if invalid
       }
@@ -212,32 +260,32 @@ async function generateQuiz(
 
 **Goals:**
 
-1. **Subtopic & Concept Diversity:**
-   - Cover a variety of subtopics and dimensions of "${topic}" relevant to its subject.
-   - Include both **core concepts** and **less-frequently-tested but important facts**.
-   - If "${topic}" is theoretical (e.g., grammar, polity, science), include definition, classification, rules, exceptions, examples.
-   - If "${topic}" is numerical (e.g., math, reasoning), include formula-based, application, and error-prone trick questions.
+1.  **Subtopic & Concept Diversity:**
+    -   Cover a variety of subtopics and dimensions of "${topic}" relevant to its subject.
+    -   Include both **core concepts** and **less-frequently-tested but important facts**.
+    -   If "${topic}" is theoretical (e.g., grammar, polity, science), include definition, classification, rules, exceptions, examples.
+    -   If "${topic}" is numerical (e.g., math, reasoning), include formula-based, application, and error-prone trick questions.
 
-2. **Avoid Repetition:**
-   - Do NOT repeat question structure or content within the same set.
-   - Go beyond standard textbook examples or surface-level facts.
+2.  **Avoid Repetition:**
+    -   Do NOT repeat question structure or content within the same set.
+    -   Go beyond standard textbook examples or surface-level facts.
 
-3. **Varied Question Styles:**
-   - Use a mix of:
-     - Concept-based
-     - Application/problem-solving
-     - Exception-type
-     - "Which of the following is true/false?"
-     - Match the following
-     - Cause-effect or chronology
-   - Avoid predictable patterns like always starting with “What is…” or “Who…”
+3.  **Varied Question Styles:**
+    -   Use a mix of:
+        -   Concept-based
+        -   Application/problem-solving
+        -   Exception-type
+        -   "Which of the following is true/false?"
+        -   Match the following
+        -   Cause-effect or chronology
+    -   Avoid predictable patterns like always starting with “What is…” or “Who…”
 
-4. **High-Utility Explanations:**
-   - For each question:
-     - **Explain why the answer is correct** using concise logic, formula, rule, or fact.
-     - **Briefly address why the other options are incorrect** (if possible).
-     - Include **exam-relevant keywords**, short tricks, formulas, historical years, grammatical rules, etc.
-   - Keep tone **exam-focused**, not conversational.
+4.  **High-Utility Explanations:**
+    -   For each question:
+        -   **Explain why the answer is correct** using concise logic, formula, rule, or fact.
+        -   **Briefly address why the other options are incorrect** (if possible).
+        -   Include **exam-relevant keywords**, short tricks, formulas, historical years, grammatical rules, etc.
+    -   Keep tone **exam-focused**, not conversational.
 
 **Output Format (JSON only):**
 [
@@ -380,6 +428,9 @@ function loadQuestion() {
   optionsContainer.innerHTML = ""; // Clear previous options
   if (feedbackSection) feedbackSection.classList.add("hidden");
   if (explanationBox) explanationBox.classList.add("hidden");
+  if (moreInfoBox) moreInfoBox.classList.add("hidden"); // Hide "Know More" info
+  if (knowMoreButton) knowMoreButton.classList.remove("hidden"); // Show "Know More" button
+  if (moreInfoText) moreInfoText.innerHTML = ""; // Clear previous "Know More" text (use innerHTML now)
 
   // Update navigation button states
   if (prevQuestionButton) prevQuestionButton.disabled = currentQuestionIndex === 0;
@@ -426,6 +477,12 @@ function loadQuestion() {
     // If previously answered, show feedback immediately
     if (previouslyAnswered) {
       showFeedback(currentQuestion);
+    }
+
+    // Display stored 'moreInfo' if available for the current question
+    if (currentQuestion.moreInfo) {
+      if (moreInfoText) moreInfoText.innerHTML = marked.parse(currentQuestion.moreInfo); // Parse Markdown to HTML
+      if (moreInfoBox) moreInfoBox.classList.remove("hidden");
     }
   } else {
     // Quiz finished if navigating past the last question
@@ -520,6 +577,8 @@ function showResults() {
   if (quizResultSection) quizResultSection.classList.remove("hidden");
   if (finalScoreSpan) finalScoreSpan.textContent = correctAnswersCount;
   if (totalQuestionsResultSpan) totalQuestionsResultSpan.textContent = quizData.length;
+  if (knowMoreButton) knowMoreButton.classList.add("hidden"); // Hide "Know More" button on results
+  if (moreInfoBox) moreInfoBox.classList.add("hidden"); // Hide "Know More" info on results
 
   // Set default filename for history download
   const defaultFilename =
@@ -564,7 +623,7 @@ if (downloadHistoryButton) {
       language: currentQuizLanguage,
       difficulty: currentQuizDifficulty,
       numQuestions: currentQuizNumQuestions,
-      quizData: quizData, // The actual array of questions with user answers
+      quizData: quizData, // The actual array of questions with user answers and 'moreInfo'
     };
 
     const filename = historyFilenameInput.value.trim() || "quiz_history.json";
@@ -673,7 +732,94 @@ if (restartQuizButton) {
     currentQuizDifficulty = "HSSC exam level";
     currentQuizNumQuestions = 5;
     if (generatePracticeButton) generatePracticeButton.classList.add("hidden"); // Hide practice button
+    if (knowMoreButton) knowMoreButton.classList.add("hidden"); // Hide "Know More" button
+    if (moreInfoBox) moreInfoBox.classList.add("hidden"); // Hide "Know More" info
   });
+}
+
+/**
+ * Fetches more detailed information about the current question using the Gemini API.
+ */
+async function getMoreInfo() {
+  const apiKey = apiKeyInput.value.trim();
+  if (!apiKey) {
+    showMessageBox("Error", "Please enter your Gemini API Key to get more information.");
+    return;
+  }
+
+  const currentQuestion = quizData[currentQuestionIndex];
+  const question = currentQuestion.question;
+  const language = currentQuizLanguage; // Use the language of the current quiz
+
+  // If moreInfo is already stored, just display it
+  if (currentQuestion.moreInfo) {
+    if (moreInfoText) moreInfoText.innerHTML = marked.parse(currentQuestion.moreInfo); // Parse Markdown to HTML
+    if (moreInfoBox) moreInfoBox.classList.remove("hidden");
+    return;
+  }
+
+  // If not stored, fetch it
+  if (moreInfoText) moreInfoText.innerHTML = "Loading more information..."; // Use innerHTML for loading message
+  if (moreInfoBox) moreInfoBox.classList.remove("hidden");
+  if (knowMoreButton) knowMoreButton.disabled = true; // Disable to prevent multiple clicks
+
+  try {
+    const prompt = `Provide a short but complete explanation for the following question, suitable for HSSC Group C and similar exams.
+
+- Identify the subject (Maths, Reasoning, GK, Science, Polity, Hindi, English, etc.) and tailor the explanation accordingly.
+- For Maths/Reasoning: give key formulas, concepts, tricks, and a step-by-step solution.
+- For GK/Science/Polity/Language-based: give crisp facts, definitions, background, and commonly linked follow-up points.
+- Make sure the explanation is in the **same language** as the question.
+- Use **Markdown** format with bold headers and bullet points for quick revision.
+
+Question: "${question}"`;
+
+    const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+
+    const payload = {
+      contents: chatHistory,
+      generationConfig: {
+        responseMimeType: "text/plain", // Still request plain text, Marked.js will parse it
+      },
+    };
+
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await response.json();
+
+    if (
+      result.candidates &&
+      result.candidates.length > 0 &&
+      result.candidates[0].content &&
+      result.candidates[0].content.parts &&
+      result.candidates[0].content.parts.length > 0
+    ) {
+      const moreInfoMarkdown = result.candidates[0].content.parts[0].text;
+      // Store the fetched information in the quizData for the current question
+      currentQuestion.moreInfo = moreInfoMarkdown;
+      if (moreInfoText) moreInfoText.innerHTML = marked.parse(moreInfoMarkdown); // Parse Markdown to HTML
+    } else {
+      if (moreInfoText) moreInfoText.innerHTML = "Could not retrieve more information.";
+    }
+  } catch (error) {
+    console.error("Error fetching more info:", error);
+    if (moreInfoText)
+      moreInfoText.innerHTML =
+        "An error occurred while fetching more information. Please check your API key or network connection.";
+  } finally {
+    if (knowMoreButton) knowMoreButton.disabled = false; // Re-enable button
+  }
+}
+
+// Event listener for "Know More" button
+if (knowMoreButton) {
+  knowMoreButton.addEventListener("click", getMoreInfo);
 }
 
 // Initial setup on quiz page load
@@ -685,4 +831,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (inputSelectionSection) inputSelectionSection.classList.remove("hidden");
   if (quizDisplaySection) quizDisplaySection.classList.add("hidden");
   if (quizResultSection) quizResultSection.classList.add("hidden");
+  if (knowMoreButton) knowMoreButton.classList.add("hidden"); // Ensure hidden initially
+  if (moreInfoBox) moreInfoBox.classList.add("hidden"); // Ensure hidden initially
 });
